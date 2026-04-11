@@ -31,6 +31,38 @@ app.include_router(users_router)
 app.include_router(interactions_router)
 app.include_router(network_router)
 
+@app.get("/")
+async def root_ping():
+    return {
+        "system": "Cohort Connect Engine v2.0",
+        "status": "online",
+        "documentation": "/docs",
+        "message": "API endpoints are actively serving."
+    }
+
+@app.get("/health")
+async def health_check():
+    db = get_db()
+    # Simple db ping
+    try:
+        await db.command("ping")
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"disconnected: {str(e)}"
+        
+    return {
+        "status": "healthy",
+        "database": db_status,
+        "active_modules": [
+            "authentication",
+            "users",
+            "interactions",
+            "network",
+            "semantic_search",
+            "cv_extraction"
+        ]
+    }
+
 @app.get("/api/jobs")
 
 async def get_jobs():
