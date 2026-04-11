@@ -71,7 +71,7 @@ export default function ModernAppLayout({ children, userType = 'student' }) {
                     layoutId="activeTab"
                     className="absolute inset-0 bg-black/5 dark:bg-white/5 rounded-lg border border-[var(--border)]"
                     initial={false}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
                   />
                 )}
                 <item.icon size={18} className="relative z-10" />
@@ -110,10 +110,10 @@ export default function ModernAppLayout({ children, userType = 'student' }) {
       <main className="flex-1 md:ml-64 pb-20 md:pb-0 relative min-h-screen">
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className="p-4 md:p-8 max-w-5xl mx-auto text-[var(--foreground)]"
         >
           {children}

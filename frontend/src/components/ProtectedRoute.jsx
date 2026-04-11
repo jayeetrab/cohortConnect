@@ -7,9 +7,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f3f2ef]">
-         <div className="text-center text-gray-500 font-semibold animate-pulse text-lg">
-           Verifying Cohort Connect Access Token...
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+         <div className="text-center text-[var(--primary-500)] font-semibold text-lg">
+           Verifying Career Credentials...
          </div>
       </div>
     );
