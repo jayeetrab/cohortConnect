@@ -14,8 +14,8 @@ export default function SettingsPage() {
     setLoading(true);
     setStatus({ type: null, message: '' });
     try {
-      await axios.put('/auth/password', authData);
-      setStatus({ type: 'success', message: 'Password updated successfully' });
+      await axios.put('/api/auth/password', authData);
+      setStatus({ type: 'success', message: 'System credentials updated successfully.' });
       setAuthData({ current_password: '', new_password: '' });
       setTimeout(() => setActiveForm(null), 2000);
     } catch (err) {

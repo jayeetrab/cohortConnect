@@ -14,7 +14,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get('/users/me');
+        const res = await axios.get('/api/users/me');
         setProfile(res.data.profile || {});
         setFormData({
           name: res.data.profile?.name || user?.name || '',

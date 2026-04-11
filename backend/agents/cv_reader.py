@@ -10,8 +10,11 @@ async def extract_cv_insights(file_path: str) -> dict:
         reader = pypdf.PdfReader(file_path)
         text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
         
+        from core.config import settings
         # If API key exists, do real LangChain extraction with Gemini
-        if os.getenv("GOOGLE_API_KEY"):
+        if settings.GOOGLE_API_KEY:
+            import os
+            os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY
             llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1)
             parser = PydanticOutputParser(pydantic_object=CVExtraction)
             prompt = PromptTemplate(

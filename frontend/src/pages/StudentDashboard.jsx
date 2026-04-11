@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UploadCloud, FileText, CheckCircle, Briefcase, Users, Plus, BrainCircuit, Activity, Database, Radar, ChevronRight, Heart, MessageSquare } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Briefcase, Users, Plus, BrainCircuit, Activity, Database, Radar, ChevronRight, Heart, MessageSquare, AlertCircle } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';

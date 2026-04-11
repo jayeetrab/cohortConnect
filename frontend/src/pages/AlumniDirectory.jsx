@@ -14,7 +14,7 @@ export default function AlumniDirectory() {
   useEffect(() => {
     const fetchAlumni = async () => {
       try {
-        const res = await axios.get('/users/alumni');
+        const res = await axios.get('/api/alumni');
         setAlumni(res.data.data || []);
       } catch (err) {
         console.error(err);
