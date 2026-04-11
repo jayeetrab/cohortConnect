@@ -74,7 +74,7 @@ export default function AlumniDirectory() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="glass-panel h-80 rounded-[2rem] animate-pulse bg-black/5 dark:bg-white/5" />
+            <div key={i} className="glass-panel h-80 rounded-[2rem] bg-black/5 dark:bg-white/5" />
           ))}
         </div>
       ) : (
