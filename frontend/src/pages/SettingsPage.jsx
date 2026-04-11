@@ -36,7 +36,7 @@ export default function SettingsPage() {
     setStatus({ type: null, message: '' });
     try {
       await axios.put('/api/auth/password', authData);
-      setStatus({ type: 'success', message: 'System credentials updated successfully.' });
+      setStatus({ type: 'success', message: 'Credentials updated successfully.' });
       setAuthData({ current_password: '', new_password: '' });
       setTimeout(() => setActiveForm(null), 2000);
     } catch (err) {
@@ -48,27 +48,27 @@ export default function SettingsPage() {
 
   const menuSections = [
     {
-      title: "Core Security",
+      title: "Security Hub",
       icon: <Shield className="text-emerald-500" size={24} />,
       items: [
-        { id: 'password', label: "Vector Credentials", description: "Rotate your access password", icon: <Lock size={18}/> },
-        { id: '2fa', label: "Device Biometrics", description: "Enable 2FA via mobile authenticator", icon: <Fingerprint size={18}/>, type: 'toggle', key: 'twoFactor' }
+        { id: 'password', label: "Account Credentials", description: "Secure your access password", icon: <Lock size={18}/> },
+        { id: '2fa', label: "Identity Protection", description: "Enable 2FA via authenticator app", icon: <Fingerprint size={18}/>, type: 'toggle', key: 'twoFactor' }
       ]
     },
     {
-      title: "Network Presence",
+      title: "Career Presence",
       icon: <Globe className="text-sky-500" size={24} />,
       items: [
-        { id: 'visibility', label: "Semantic Visibility", description: "Allow recruiters to find your vector node", icon: <Eye size={18}/>, type: 'toggle', key: 'profileVisible' },
-        { id: 'stealth', label: "Stealth Mode", description: "Hide your identity from public directory", icon: <Share2 size={18}/>, type: 'toggle', key: 'stealthMode' }
+        { id: 'visibility', label: "Hiring Visibility", description: "Allow placement officers to see your profile", icon: <Eye size={18}/>, type: 'toggle', key: 'profileVisible' },
+        { id: 'stealth', label: "Confidential Mode", description: "Hide your identity from the general network", icon: <Share2 size={18}/>, type: 'toggle', key: 'stealthMode' }
       ]
     },
     {
-      title: "Comms & Data",
+      title: "Communications",
       icon: <Cloud className="text-purple-500" size={24} />,
       items: [
-        { id: 'email', label: "Mail Feed", description: "Receive activity updates via email", icon: <Mail size={18}/>, type: 'toggle', key: 'emailNotips' },
-        { id: 'analytics', label: "Analytics Ingestion", description: "Enable anonymous data for ecosystem growth", icon: <Zap size={18}/>, type: 'toggle', key: 'analyticsEnabled' }
+        { id: 'email', label: "Placement Alerts", description: "Get job alerts via email", icon: <Mail size={18}/>, type: 'toggle', key: 'emailNotips' },
+        { id: 'analytics', label: "Strategy Feedback", description: "Help improve our matching with anonymous data", icon: <Zap size={18}/>, type: 'toggle', key: 'analyticsEnabled' }
       ]
     }
   ];
@@ -79,7 +79,7 @@ export default function SettingsPage() {
       <div className="flex justify-between items-end gap-6 pt-6">
         <div className="space-y-2">
           <h1 className="text-5xl font-black text-[var(--foreground)] tracking-tighter">Command Center</h1>
-          <p className="text-[var(--primary-500)] text-lg font-medium">Calibrate your security parameters and operational visibility.</p>
+          <p className="text-[var(--primary-500)] text-lg font-medium">Calibrate your privacy and placement visibility parameters.</p>
         </div>
         <AnimatePresence>
           {syncing && (
@@ -89,7 +89,7 @@ export default function SettingsPage() {
               exit={{ opacity: 0, x: 20 }}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 text-xs font-bold uppercase tracking-widest rounded-full border border-emerald-500/20 mb-2"
             >
-              <Sparkles size={12} className="animate-spin" /> Syncing to Cloud
+              <Sparkles size={12} className="animate-spin" /> Updating Ecosystem
             </motion.div>
           )}
         </AnimatePresence>
@@ -159,7 +159,7 @@ export default function SettingsPage() {
                             )}
                             <div className="space-y-4">
                               <div>
-                                <label className="text-xs font-black text-[var(--primary-500)] uppercase tracking-widest pl-1">Operational Key (Current)</label>
+                                <label className="text-xs font-black text-[var(--primary-500)] uppercase tracking-widest pl-1">Current Password</label>
                                 <input 
                                   type="password" required 
                                   value={authData.current_password} 
@@ -168,7 +168,7 @@ export default function SettingsPage() {
                                 />
                               </div>
                               <div>
-                                <label className="text-xs font-black text-[var(--primary-500)] uppercase tracking-widest pl-1">New Identity Hash</label>
+                                <label className="text-xs font-black text-[var(--primary-500)] uppercase tracking-widest pl-1">New Identity Code</label>
                                 <input 
                                   type="password" required 
                                   value={authData.new_password} 
@@ -180,7 +180,7 @@ export default function SettingsPage() {
                             <div className="flex gap-4 justify-end pt-4">
                                <button type="button" onClick={() => setActiveForm(null)} className="px-6 py-3 font-bold text-[var(--primary-500)] hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-all">Cancel</button>
                                <button type="submit" disabled={loading} className="flex items-center gap-2 px-8 py-3 font-black bg-[var(--foreground)] text-[var(--background)] rounded-2xl hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 shadow-xl">
-                                  {loading ? "Re-syncing..." : "Update Credentials"}
+                                  {loading ? "Re-syncing..." : "Update Security"}
                                </button>
                             </div>
                           </form>

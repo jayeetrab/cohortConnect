@@ -52,8 +52,8 @@ export default function AlumniDirectory() {
         className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-6"
       >
         <div className="space-y-2">
-          <h1 className="text-5xl font-black text-[var(--foreground)] tracking-tighter">Domain Network</h1>
-          <p className="text-[var(--primary-500)] text-lg font-medium">Connect with operationally verified graduates across the global vector space.</p>
+          <h1 className="text-5xl font-black text-[var(--foreground)] tracking-tighter">Alumni Network</h1>
+          <p className="text-[var(--primary-500)] text-lg font-medium">Connect with verified graduates and mentors across the Cohort Connect ecosystem.</p>
         </div>
         
         <div className="flex gap-3 w-full md:w-auto">
@@ -61,7 +61,7 @@ export default function AlumniDirectory() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" size={18} />
             <input 
               type="text" 
-              placeholder="Filter by node or organization..." 
+              placeholder="Search by name or company..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] focus:outline-none focus:border-[var(--primary-500)] transition-all shadow-sm"
@@ -122,7 +122,7 @@ export default function AlumniDirectory() {
                 </div>
 
                 <div className="pt-6 border-t border-[var(--border)] flex items-center justify-between group-hover:px-2 transition-all">
-                  <span className="text-xs font-bold text-[var(--primary-600)] uppercase tracking-widest">View Identity</span>
+                  <span className="text-xs font-bold text-[var(--primary-600)] uppercase tracking-widest">Connect with Alumni</span>
                   <ChevronRight size={16} className="text-[var(--primary-500)] group-hover:translate-x-1 transition-transform" />
                 </div>
               </motion.div>
@@ -164,14 +164,14 @@ export default function AlumniDirectory() {
                     <h2 className="text-4xl font-black tracking-tighter text-[var(--foreground)]">{selectedAlum.name}</h2>
                     <p className="text-xl font-bold text-emerald-500">{selectedAlum.role} @ {selectedAlum.company}</p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                      <span className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[var(--primary-500)]"><Calendar size={14} /> Class of {selectedAlum.graduation_year}</span>
-                      <span className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[var(--primary-500)]"><MapPin size={14} /> Global Remote</span>
+                       <span className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[var(--primary-500)]"><Calendar size={14} /> Alumni Class of {selectedAlum.graduation_year}</span>
+                       <span className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[var(--primary-500)]"><MapPin size={14} /> Available Mentor</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--primary-600)]">Domain Knowledge</h4>
+                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--primary-600)]">Expertise & Mentorship</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedAlum.expertise.map((exp, i) => (
                       <span key={i} className="px-5 py-2 bg-black/3 dark:bg-white/3 border border-[var(--border)] rounded-2xl text-sm font-bold text-[var(--foreground)] shadow-sm">
@@ -182,9 +182,9 @@ export default function AlumniDirectory() {
                 </div>
 
                 <div className="p-8 bg-black/5 dark:bg-white/5 rounded-[2rem] border border-[var(--border)]">
-                  <p className="text-[var(--primary-500)] text-sm leading-relaxed font-medium">
-                    "I am passionate about building robust AI architectures and helping UoB graduates find high-impact roles in the vector space. Feel free to reach out for architectural mentoring or job referrals within my network nodes."
-                  </p>
+                   <p className="text-[var(--primary-500)] text-sm leading-relaxed font-medium">
+                     "I am passionate about helping UoB graduates find high-impact roles through the Cohort Connect initiative. Feel free to start a consultation if you want career advice or job referrals."
+                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -192,14 +192,14 @@ export default function AlumniDirectory() {
                     onClick={() => navigate('/messaging')}
                     className="flex-1 flex items-center justify-center gap-3 py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
-                    <MessageSquare size={18}/> Initiate Comms
+                    <MessageSquare size={18}/> Start Consultation
                   </button>
                   <button 
                     onClick={() => handleConnect(null, selectedAlum._id)} 
                     disabled={connectedIds.has(selectedAlum._id)}
                     className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-sm transition-all border ${connectedIds.has(selectedAlum._id) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-transparent border-[var(--border)] hover:bg-black/5 dark:hover:bg-white/5'}`}
                   >
-                    {connectedIds.has(selectedAlum._id) ? <><Check size={18}/> Request Pending</> : <><UserPlus size={18}/> Request Partnership</>}
+                    {connectedIds.has(selectedAlum._id) ? <><Check size={18}/> Request Pending</> : <><UserPlus size={18}/> Contact Alumni</>}
                   </button>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   UploadCloud, FileText, CheckCircle, Briefcase, Users, Plus, 
   BrainCircuit, Activity, Database, Radar, ChevronRight, Heart, 
@@ -27,7 +27,7 @@ export default function StudentDashboard() {
           api.get('/api/alumni'),
           api.get('/api/users/me')
         ]);
-        setJobs((jobsRes.data.data || []).slice(0, 4));
+        setJobs(jobsRes.data.data || []);
         setAlumni((alumniRes.data.data || []).slice(0, 5));
         if (profileRes.data.profile) setProfile(profileRes.data.profile);
       } catch (err) {
@@ -36,6 +36,25 @@ export default function StudentDashboard() {
     };
     loadData();
   }, []);
+
+  // Intelligent Job Matching Logic
+  const matchedJobs = useMemo(() => {
+    if (!profile?.skills || profile.skills.length === 0) return jobs.slice(0, 4);
+
+    const userSkills = profile.skills.map(s => s.toLowerCase());
+    
+    return [...jobs]
+      .map(job => {
+        const required = job.required_skills || [];
+        const matchCount = required.filter(skill => 
+          userSkills.some(us => us.includes(skill.toLowerCase()) || skill.toLowerCase().includes(us))
+        ).length;
+        const matchScore = required.length > 0 ? (matchCount / required.length) * 100 : 0;
+        return { ...job, matchScore };
+      })
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, 4);
+  }, [jobs, profile]);
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
@@ -49,13 +68,13 @@ export default function StudentDashboard() {
       const data = res.data;
       if(data.status === "parsed") {
           setProfile(data.data);
-          setMessage({ type: 'success', text: "Intelligence extracted successfully. Vector pool updated." });
+          setMessage({ type: 'success', text: "Profile matching finalized. Your career dashboard is now active." });
           setTimeout(() => setMessage(null), 5000);
       } else {
-          setMessage({ type: 'error', text: String(data.message || "Failed to parse document.") });
+          setMessage({ type: 'error', text: String(data.message || "Could not analyze document.") });
       }
     } catch (err) {
-      let errorMsg = err.response?.data?.detail || err.message || "Network error loading pipeline.";
+      let errorMsg = err.response?.data?.detail || err.message || "Placement pipeline error.";
       if (Array.isArray(errorMsg)) errorMsg = errorMsg[0]?.msg || JSON.stringify(errorMsg);
       setMessage({ type: 'error', text: String(errorMsg) });
     } finally {
@@ -66,7 +85,7 @@ export default function StudentDashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-16 pb-20">
       
-      {/* 1. MINIMAL HERO SECTION */}
+      {/* 1. MENTOR HERO SECTION */}
       <motion.section 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -74,17 +93,17 @@ export default function StudentDashboard() {
         className="text-center space-y-6 pt-10"
       >
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold uppercase tracking-widest animate-pulse">
-          <Activity size={12} /> System Live • v2.1
+          <Activity size={12} /> Placement Assistant Online
         </div>
         <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[var(--foreground)] leading-tight">
-          Welcome, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-sky-500">{user?.name?.split(' ')[0] || 'Jay'}</span>.
+          Welcome, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-sky-500">{user?.name || 'Jay'}</span>.
         </h1>
         <p className="text-xl text-[var(--primary-500)] max-w-2xl mx-auto font-medium leading-relaxed">
-          Your semantic vector environment is primed. Upload your profile geometry to expand your domain authority across the network.
+          Your personal career coach is ready. Upload your latest CV to synchronize your skills with active industry requirements.
         </p>
       </motion.section>
 
-      {/* 2. FLOATING STATS BAR */}
+      {/* 2. PLACEMENT PERFORMANCE BAR */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -93,7 +112,7 @@ export default function StudentDashboard() {
       >
         <div className="bg-[var(--background)] p-8 flex flex-col gap-1 items-center md:items-start">
           <span className="text-[10px] font-bold text-[var(--primary-500)] uppercase tracking-widest flex items-center gap-2">
-            <Zap size={12} className="text-emerald-500" /> Vector Score
+            <Zap size={12} className="text-emerald-500" /> Hireability Score
           </span>
           <div className="text-4xl font-black text-[var(--foreground)] mt-2">
             {profile?.hireability_score || "--"}<span className="text-sm font-medium text-[var(--primary-600)]">/100</span>
@@ -101,15 +120,15 @@ export default function StudentDashboard() {
         </div>
         <div className="bg-[var(--background)] p-8 flex flex-col gap-1 items-center md:items-start">
           <span className="text-[10px] font-bold text-[var(--primary-500)] uppercase tracking-widest flex items-center gap-2">
-            <Target size={12} className="text-sky-500" /> Semantics
+            <Target size={12} className="text-sky-500" /> Matched Roles
           </span>
           <div className="text-4xl font-black text-[var(--foreground)] mt-2">
-            {jobs.length}
+             {matchedJobs.filter(j => (j.matchScore || 0) > 0).length || matchedJobs.length}
           </div>
         </div>
         <div className="bg-[var(--background)] p-8 flex flex-col gap-1 items-center md:items-start">
           <span className="text-[10px] font-bold text-[var(--primary-500)] uppercase tracking-widest flex items-center gap-2">
-            <Users size={12} className="text-purple-500" /> Density
+            <Users size={12} className="text-purple-500" /> Alumni Network
           </span>
           <div className="text-4xl font-black text-[var(--foreground)] mt-2">
             {alumni.length}
@@ -117,15 +136,15 @@ export default function StudentDashboard() {
         </div>
         <div className="bg-[var(--background)] p-8 flex flex-col gap-1 items-center md:items-start">
           <span className="text-[10px] font-bold text-[var(--primary-500)] uppercase tracking-widest flex items-center gap-2">
-            <Shield size={12} className="text-emerald-500" /> Clearance
+            <Shield size={12} className="text-emerald-500" /> Verification
           </span>
           <div className="text-4xl font-black text-emerald-500 mt-2 lowercase">
-            Verified
+            Active
           </div>
         </div>
       </motion.div>
 
-      {/* 3. ADVANCED HUB: INTELLIGENCE EXTRACTOR */}
+      {/* 3. CAREER HUB: PLACEMENT ASSISTANT */}
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/30 to-sky-500/30 rounded-[2.5rem] blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
         <motion.div 
@@ -146,9 +165,9 @@ export default function StudentDashboard() {
             </div>
             
             <div className="max-w-md space-y-3">
-              <h2 className="text-2xl font-black text-[var(--foreground)]">Intelligence Portal</h2>
+              <h2 className="text-2xl font-black text-[var(--foreground)]">Career Matching Portal</h2>
               <p className="text-[var(--primary-500)] text-sm leading-relaxed">
-                Connect your professional geometry (PDF). Our LangChain engine will meticulously map your nodes into the semantic graph.
+                Upload your CV to let the Cohort Connect assistant map your expertise to global placement opportunities.
               </p>
             </div>
 
@@ -156,9 +175,9 @@ export default function StudentDashboard() {
               <div className="absolute -inset-4 bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover/btn:opacity-100 transition duration-500"></div>
               <span className={`relative flex items-center gap-3 px-10 py-4 rounded-2xl font-bold text-sm transition-all border shadow-lg ${isUploading ? 'bg-black/5 text-[var(--primary-500)] border-[var(--border)] cursor-not-allowed' : 'bg-[var(--foreground)] text-[var(--background)] border-transparent hover:px-12 active:scale-95'}`}>
                 {isUploading ? (
-                  <>Scanning Vector Space...</>
+                  <>Analyzing Career Path...</>
                 ) : (
-                  <>Inject Capability Vector <ArrowRight size={16} /></>
+                  <>Update Placement Profile <ArrowRight size={16} /></>
                 )}
               </span>
               <input type="file" accept=".pdf" onChange={handleUpload} className="hidden" disabled={isUploading}/>
@@ -178,7 +197,7 @@ export default function StudentDashboard() {
             </AnimatePresence>
           </div>
 
-          {/* DYNAMIC DATA REVEAL */}
+          {/* DYNAMIC PROFILE REVEAL */}
           <AnimatePresence>
             {profile && profile.skills && (
               <motion.div 
@@ -189,7 +208,7 @@ export default function StudentDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold text-[var(--primary-500)] uppercase tracking-[0.2em] flex items-center gap-2">
-                       <TrendingUp size={12} className="text-emerald-500" /> Extracted Nodes
+                       <TrendingUp size={12} className="text-emerald-500" /> Validated Skills
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {profile.skills.slice(0, 15).map((skill, idx) => (
@@ -201,13 +220,13 @@ export default function StudentDashboard() {
                   </div>
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-bold text-[var(--primary-500)] uppercase tracking-[0.2em] flex items-center gap-2">
-                       <Sparkles size={12} className="text-sky-500" /> Strategic Alignment
+                       <Sparkles size={12} className="text-sky-500" /> Career Alignment
                     </h4>
                     <p className="text-lg font-bold text-[var(--foreground)] leading-tight italic">
                       "{profile.domain_competency}"
                     </p>
                     <div className="pt-4 border-t border-[var(--border)] opacity-50 text-[10px] uppercase font-bold tracking-widest">
-                       Graph Match Resolved
+                       Match Engine Resolved
                     </div>
                   </div>
                 </div>
@@ -217,24 +236,26 @@ export default function StudentDashboard() {
         </motion.div>
       </div>
 
-      {/* 4. TARGET ARCHITECTURE HITS (JOBS) AND NETWORK */}
+      {/* 4. SMART JOBS AND ALUMNI */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <h3 className="text-xl font-bold flex items-center gap-2 text-[var(--foreground)]">
-              <Briefcase size={20} className="text-sky-500" /> Target Assets
+              <Briefcase size={20} className="text-sky-500" /> Matched Opportunities
             </h3>
             <button onClick={() => navigate('/jobs')} className="text-xs font-bold text-[var(--primary-500)] hover:text-[var(--foreground)] transition-colors">Explorer All</button>
           </div>
           <div className="space-y-4">
-            {jobs.map((job, idx) => (
+            {matchedJobs.map((job, idx) => (
               <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate('/jobs')}>
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-bold text-[var(--foreground)]">{job.title}</h4>
                     <p className="text-xs text-[var(--primary-600)] mt-1">{job.company} • {job.location}</p>
                   </div>
-                  <div className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-black rounded uppercase">Optimal</div>
+                  <div className={`px-2 py-1 text-[10px] font-black rounded uppercase ${job.matchScore > 70 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-sky-500/10 text-sky-500'}`}>
+                    {job.matchScore > 0 ? `${Math.round(job.matchScore)}% Match` : 'New Opening'}
+                  </div>
                 </div>
               </div>
             ))}
@@ -244,9 +265,9 @@ export default function StudentDashboard() {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <h3 className="text-xl font-bold flex items-center gap-2 text-[var(--foreground)]">
-              <Users size={20} className="text-purple-500" /> Operational Peers
+              <Users size={20} className="text-purple-500" /> Alumni Network
             </h3>
-            <button onClick={() => navigate('/network')} className="text-xs font-bold text-[var(--primary-500)] hover:text-[var(--foreground)] transition-colors">Network Map</button>
+            <button onClick={() => navigate('/network')} className="text-xs font-bold text-[var(--primary-500)] hover:text-[var(--foreground)] transition-colors">Directory</button>
           </div>
           <div className="glass-panel border border-[var(--border)] rounded-2xl overflow-hidden divide-y divide-[var(--border)]">
             {alumni.map((alum, idx) => (
