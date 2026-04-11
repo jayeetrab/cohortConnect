@@ -19,15 +19,10 @@ export default function AlumniDirectory() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([
-      axios.get('/api/alumni'),
-      axios.get('/api/users/me').catch(() => ({ data: { profile: null } }))
-    ]).then(([alumniRes, userRes]) => {
-      setAlumni(alumniRes.data.data || []);
-      if (userRes.data?.profile) {
-        setProfile(userRes.data.profile);
-      }
-    }).finally(() => setLoading(false));
+    axios.get('/api/alumni/matches')
+       .then(res => setAlumni(res.data.data || []))
+       .catch(err => console.error(err))
+       .finally(() => setLoading(false));
   }, []);
 
   const handleConnect = (e, id) => {
@@ -37,23 +32,9 @@ export default function AlumniDirectory() {
     setConnectedIds(newSet);
   };
 
-  const processedAlumni = React.useMemo(() => {
-    if (!profile?.skills || profile.skills.length === 0) return alumni;
-    const userSkills = profile.skills.map(s => s.toLowerCase());
-
-    return alumni.map(alum => {
-      const expertise = alum.expertise || [];
-      const matchCount = expertise.filter(e => 
-        userSkills.some(us => us.includes(e.toLowerCase()) || e.toLowerCase().includes(us))
-      ).length;
-      const matchScore = expertise.length > 0 ? (matchCount / expertise.length) * 100 : 0;
-      return { ...alum, matchScore };
-    }).sort((a, b) => b.matchScore - a.matchScore);
-  }, [alumni, profile]);
-
   const displayedAlumni = showMatches 
-    ? processedAlumni.filter(a => (a.matchScore || 0) > 0)
-    : processedAlumni;
+    ? alumni.filter(a => (a.matchScore || 0) > 0)
+    : alumni;
 
   const filteredAlumni = displayedAlumni.filter(a => 
     a.name.toLowerCase().includes(search.toLowerCase()) || 

@@ -10,15 +10,10 @@ export default function NetworkPage() {
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/api/alumni'),
-      api.get('/api/users/me').catch(() => ({ data: { profile: null } }))
-    ]).then(([alumniRes, userRes]) => {
-      setAlumni(alumniRes.data.data || []);
-      if (userRes.data?.profile) {
-        setProfile(userRes.data.profile);
-      }
-    }).finally(() => setLoading(false));
+    api.get('/api/alumni/matches')
+       .then(res => setAlumni(res.data.data || []))
+       .catch(err => console.error(err))
+       .finally(() => setLoading(false));
   }, []);
 
   const handleConnect = (e, id) => {
@@ -28,21 +23,7 @@ export default function NetworkPage() {
     setConnectedIds(newSet);
   };
 
-  const processedAlumni = React.useMemo(() => {
-    if (!profile?.skills || profile.skills.length === 0) return alumni;
-    const userSkills = profile.skills.map(s => s.toLowerCase());
-
-    return alumni.map(alum => {
-      const expertise = alum.expertise || [];
-      const matchCount = expertise.filter(e => 
-        userSkills.some(us => us.includes(e.toLowerCase()) || e.toLowerCase().includes(us))
-      ).length;
-      const matchScore = expertise.length > 0 ? (matchCount / expertise.length) * 100 : 0;
-      return { ...alum, matchScore };
-    }).sort((a, b) => b.matchScore - a.matchScore);
-  }, [alumni, profile]);
-
-  const displayedAlumni = showAll ? processedAlumni : processedAlumni.filter(a => (a.matchScore || 0) > 0);
+  const displayedAlumni = showAll ? alumni : alumni.filter(a => (a.matchScore || 0) > 0);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 max-w-full text-[var(--foreground)]">
