@@ -10,24 +10,24 @@ import {
 
 export default function AlumniDirectory() {
   const [alumni, setAlumni] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [connectedIds, setConnectedIds] = useState(new Set());
   const [selectedAlum, setSelectedAlum] = useState(null);
+  const [showMatches, setShowMatches] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAlumni = async () => {
-      try {
-        const res = await axios.get('/api/alumni');
-        setAlumni(res.data.data || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+    Promise.all([
+      axios.get('/api/alumni'),
+      axios.get('/api/users/me').catch(() => ({ data: { profile: null } }))
+    ]).then(([alumniRes, userRes]) => {
+      setAlumni(alumniRes.data.data || []);
+      if (userRes.data?.profile) {
+        setProfile(userRes.data.profile);
       }
-    };
-    fetchAlumni();
+    }).finally(() => setLoading(false));
   }, []);
 
   const handleConnect = (e, id) => {
@@ -37,7 +37,25 @@ export default function AlumniDirectory() {
     setConnectedIds(newSet);
   };
 
-  const filteredAlumni = alumni.filter(a => 
+  const processedAlumni = React.useMemo(() => {
+    if (!profile?.skills || profile.skills.length === 0) return alumni;
+    const userSkills = profile.skills.map(s => s.toLowerCase());
+
+    return alumni.map(alum => {
+      const expertise = alum.expertise || [];
+      const matchCount = expertise.filter(e => 
+        userSkills.some(us => us.includes(e.toLowerCase()) || e.toLowerCase().includes(us))
+      ).length;
+      const matchScore = expertise.length > 0 ? (matchCount / expertise.length) * 100 : 0;
+      return { ...alum, matchScore };
+    }).sort((a, b) => b.matchScore - a.matchScore);
+  }, [alumni, profile]);
+
+  const displayedAlumni = showMatches 
+    ? processedAlumni.filter(a => (a.matchScore || 0) > 0)
+    : processedAlumni;
+
+  const filteredAlumni = displayedAlumni.filter(a => 
     a.name.toLowerCase().includes(search.toLowerCase()) || 
     (a.company && a.company.toLowerCase().includes(search.toLowerCase()))
   );
@@ -56,8 +74,16 @@ export default function AlumniDirectory() {
           <p className="text-[var(--primary-500)] text-lg font-medium">Connect with verified graduates and mentors across the Cohort Connect ecosystem.</p>
         </div>
         
-        <div className="flex gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-96">
+        <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+          {profile && profile.skills && profile.skills.length > 0 && (
+            <button 
+               onClick={() => setShowMatches(!showMatches)} 
+               className={`px-6 py-3.5 rounded-2xl font-bold text-sm transition-all whitespace-nowrap shadow-sm border ${showMatches ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 border-transparent'}`}
+            >
+               {showMatches ? "Viewing Exact Matches" : "View Smart Matches"}
+            </button>
+          )}
+          <div className="relative flex-1 md:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" size={18} />
             <input 
               type="text" 
@@ -98,6 +124,9 @@ export default function AlumniDirectory() {
                     <h3 className="text-xl font-black text-[var(--foreground)] group-hover:text-emerald-500 transition-colors tracking-tight">{alum.name}</h3>
                     <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--primary-500)] uppercase tracking-widest mt-1">
                       <Star size={12} className="text-emerald-500" /> Class of {alum.graduation_year}
+                      {alum.matchScore > 0 && (
+                        <span className="ml-2 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 text-[9px] font-black">{Math.round(alum.matchScore)}% Align</span>
+                      )}
                     </div>
                   </div>
                 </div>
