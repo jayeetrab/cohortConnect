@@ -9,7 +9,7 @@ db = None
 def get_db():
     global client, db
     if client is None:
-        client = AsyncIOMotorClient(settings.MONGODB_URI, tlsCAFile=certifi.where())
+        client = AsyncIOMotorClient(settings.MONGODB_URI, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=5000)
         db = client.cohortconnect
     return db
 
