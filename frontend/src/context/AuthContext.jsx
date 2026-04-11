@@ -10,7 +10,8 @@ export function AuthProvider({ children }) {
     // Check for existing token on mount
     const token = localStorage.getItem('cc_token');
     if (token) {
-      fetch('http://localhost:8000/api/auth/me', {
+      const baseUrl = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://cohortconnect-1.onrender.com');
+      fetch(`${baseUrl}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => res.json())

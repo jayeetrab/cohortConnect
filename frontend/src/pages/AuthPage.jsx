@@ -38,7 +38,8 @@ export default function AuthPage() {
          headers = { 'Content-Type': 'application/json' };
       }
 
-      const res = await fetch(`http://localhost:8000${endpoint}`, {
+      const baseUrl = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://cohortconnect-1.onrender.com');
+      const res = await fetch(`${baseUrl}/api/auth/${isLogin ? 'login' : 'register'}`, {
         method: 'POST',
         headers,
         body: bodyData

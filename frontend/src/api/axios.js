@@ -1,9 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Automatically use relative '/api' in Vercel production, or localhost override for local dev
-  baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : ''),
-  timeout: 60000 // Force fail requests gracefully after 60s to prevent UI locks, increased for LLMs
+  baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://cohortconnect-1.onrender.com'),
+  timeout: 60000 
 });
 
 api.interceptors.request.use(config => {
