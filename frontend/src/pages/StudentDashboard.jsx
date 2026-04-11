@@ -19,61 +19,27 @@ export default function StudentDashboard() {
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
 
+  const loadData = async () => {
+    try {
+      const [jobsRes, alumniRes, profileRes] = await Promise.all([
+        api.get('/api/jobs/matches'),
+        api.get('/api/alumni/matches'),
+        api.get('/api/users/me').catch(() => ({ data: { profile: null } }))
+      ]);
+      setJobs(jobsRes.data.data || []);
+      setAlumni(alumniRes.data.data || []);
+      if (profileRes.data?.profile) setProfile(profileRes.data.profile);
+    } catch (err) {
+      console.error("Dashboard engine error:", err);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [jobsRes, alumniRes, profileRes] = await Promise.all([
-          api.get('/api/jobs'),
-          api.get('/api/alumni'),
-          api.get('/api/users/me')
-        ]);
-        setJobs(jobsRes.data.data || []);
-        setAlumni((alumniRes.data.data || []).slice(0, 5));
-        if (profileRes.data.profile) setProfile(profileRes.data.profile);
-      } catch (err) {
-        console.error("Dashboard engine error:", err);
-      }
-    };
     loadData();
   }, []);
 
-  // Intelligent Job Matching Logic
-  const matchedJobs = useMemo(() => {
-    if (!profile?.skills || profile.skills.length === 0) return jobs.slice(0, 4);
-
-    const userSkills = profile.skills.map(s => s.toLowerCase());
-    
-    return [...jobs]
-      .map(job => {
-        const required = job.required_skills || [];
-        const matchCount = required.filter(skill => 
-          userSkills.some(us => us.includes(skill.toLowerCase()) || skill.toLowerCase().includes(us))
-        ).length;
-        const matchScore = required.length > 0 ? (matchCount / required.length) * 100 : 0;
-        return { ...job, matchScore };
-      })
-      .filter(job => job.matchScore > 0) // Strict Enforcement
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, 4);
-  }, [jobs, profile]);
-
-  const matchedAlumni = useMemo(() => {
-    if (!profile?.skills || profile.skills.length === 0) return alumni.slice(0, 5);
-    const userSkills = profile.skills.map(s => s.toLowerCase());
-
-    return [...alumni]
-      .map(alum => {
-        const expertise = alum.expertise || [];
-        const matchCount = expertise.filter(e => 
-          userSkills.some(us => us.includes(e.toLowerCase()) || e.toLowerCase().includes(us))
-        ).length;
-        const matchScore = expertise.length > 0 ? (matchCount / expertise.length) * 100 : 0;
-        return { ...alum, matchScore };
-      })
-      .filter(alum => alum.matchScore > 0)
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, 5);
-  }, [alumni, profile]);
+  const matchedJobs = profile?.skills?.length > 0 ? jobs.filter(j => (j.matchScore || 0) > 0).slice(0, 4) : [];
+  const matchedAlumni = profile?.skills?.length > 0 ? alumni.filter(a => (a.matchScore || 0) > 0).slice(0, 5) : [];
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];

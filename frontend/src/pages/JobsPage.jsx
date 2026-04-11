@@ -12,39 +12,21 @@ export default function JobsPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([
-      api.get('/api/jobs'),
-      api.get('/api/users/me').catch(() => ({ data: { profile: null } }))
-    ]).then(([jobsRes, userRes]) => {
-      setJobs(jobsRes.data.data || []);
-      if (userRes.data?.profile) {
-        setProfile(userRes.data.profile);
-      }
-    }).finally(() => setLoading(false));
+    api.get('/api/jobs/matches')
+       .then(res => setJobs(res.data.data || []))
+       .catch(err => console.error(err))
+       .finally(() => setLoading(false));
   }, []);
 
-  const toggleAlert = (id) => {
+  const toggleAlert = (id, e) => {
+    e.stopPropagation();
     const newAlerts = new Set(alerts);
     if(newAlerts.has(id)) newAlerts.delete(id);
     else newAlerts.add(id);
     setAlerts(newAlerts);
   };
 
-  const processedJobs = React.useMemo(() => {
-    if (!profile?.skills || profile.skills.length === 0) return jobs;
-    const userSkills = profile.skills.map(s => s.toLowerCase());
-    
-    return jobs.map(job => {
-      const required = job.required_skills || [];
-      const matchCount = required.filter(skill => 
-        userSkills.some(us => us.includes(skill.toLowerCase()) || skill.toLowerCase().includes(us))
-      ).length;
-      const matchScore = required.length > 0 ? (matchCount / required.length) * 100 : 0;
-      return { ...job, matchScore };
-    }).sort((a, b) => b.matchScore - a.matchScore);
-  }, [jobs, profile]);
-
-  const displayedJobs = showAll ? processedJobs : processedJobs.filter(j => (j.matchScore || 0) > 0);
+  const displayedJobs = showAll ? jobs : jobs.filter(j => (j.matchScore || 0) > 0);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 max-w-full text-[var(--foreground)]">
@@ -77,12 +59,16 @@ export default function JobsPage() {
                  <div className="p-12 text-center text-[var(--primary-500)] font-semibold">Loading Live Job Board...</div>
               ) : displayedJobs.length > 0 ? (
                  displayedJobs.map((job, idx) => (
-                    <div key={job._id || idx} className="p-6 hover:bg-black/5 dark:hover:bg-white/5 transition-colors grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-5 items-start group">
+                    <div 
+                       key={job._id || idx} 
+                       onClick={() => navigate(`/jobs/${job._id || job.id}`)}
+                       className="p-6 hover:bg-black/5 dark:hover:bg-white/5 transition-colors grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-5 items-start group cursor-pointer"
+                    >
                          <div className="w-16 h-16 bg-[var(--background)] rounded-2xl flex items-center justify-center border border-[var(--border)] flex-shrink-0 shadow-sm">
                              <Building size={24} className="text-[var(--primary-500)]"/>
                          </div>
                          <div>
-                             <h3 className="font-bold text-[var(--foreground)] group-hover:text-[var(--primary-500)] cursor-pointer transition-colors text-lg leading-tight mb-1">
+                             <h3 className="font-bold text-[var(--foreground)] group-hover:text-[var(--primary-500)] transition-colors text-lg leading-tight mb-1">
                                {job.title}
                                {job.matchScore > 0 && <span className="ml-3 px-2 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-black rounded uppercase align-middle">{Math.round(job.matchScore)}% Match</span>}
                              </h3>

@@ -11,6 +11,7 @@ import MessagingPage from './pages/MessagingPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import AlumniDirectory from './pages/AlumniDirectory';
+import JobDetail from './pages/JobDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function RootRedirect() {
@@ -57,6 +58,12 @@ export default function App() {
           <Route path="/jobs" element={
              <ProtectedRoute>
                 <ModernAppLayout><JobsPage /></ModernAppLayout>
+             </ProtectedRoute>
+          } />
+
+          <Route path="/jobs/:id" element={
+             <ProtectedRoute>
+                <ModernAppLayout><JobDetail /></ModernAppLayout>
              </ProtectedRoute>
           } />
 
