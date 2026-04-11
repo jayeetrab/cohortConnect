@@ -39,7 +39,7 @@ export default function NetworkPage() {
         </div>
 
         {loading ? (
-             <div className="glass-panel p-8 text-center text-[var(--primary-500)] font-semibold animate-pulse rounded-xl border border-[var(--border)] shadow-sm">Connecting to Network Vectors...</div>
+             <div className="glass-panel p-8 text-center text-[var(--primary-500)] font-semibold rounded-xl border border-[var(--border)] shadow-sm">Connecting to Network...</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                {alumni.map((alum, i) => (

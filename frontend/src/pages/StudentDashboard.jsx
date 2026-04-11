@@ -92,7 +92,7 @@ export default function StudentDashboard() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="text-center space-y-6 pt-10"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold uppercase tracking-widest animate-pulse">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold uppercase tracking-widest">
           <Activity size={12} /> Placement Assistant Online
         </div>
         <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[var(--foreground)] leading-tight">

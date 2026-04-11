@@ -49,7 +49,7 @@ export default function JobsPage() {
          
          <div className="divide-y divide-[var(--border)] flex-1">
               {loading ? (
-                 <div className="p-12 text-center text-[var(--primary-500)] font-semibold animate-pulse">Loading Live Job Board...</div>
+                 <div className="p-12 text-center text-[var(--primary-500)] font-semibold">Loading Live Job Board...</div>
               ) : jobs.length > 0 ? (
                  jobs.map((job, idx) => (
                     <div key={job._id || idx} className="p-6 hover:bg-black/5 dark:hover:bg-white/5 transition-colors grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-5 items-start group">
