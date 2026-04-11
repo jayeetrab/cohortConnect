@@ -1,59 +1,65 @@
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
+import google.generativeai as genai
 import numpy as np
+from core.config import settings
 
-# Load a fast, lightweight semantic model
-# This runs locally and generates semantic embeddings for our vectors.
-model = SentenceTransformer('all-MiniLM-L6-v2')
+# Configure Gemini for Embeddings
+genai.configure(api_key=settings.GOOGLE_API_KEY)
 
-def encode_vector(text_list: list[str]) -> np.ndarray:
-    """Encodes a list of strings into a single average semantic vector."""
-    if not text_list:
-        return np.zeros((384,)) # all-MiniLM-L6-v2 embedding dimension
-    # Create one continuous string describing the capabilities
-    combined_text = ", ".join(text_list)
-    return model.encode([combined_text])[0]
-
-def compute_similarity(source_vector: np.ndarray, target_vectors: list[np.ndarray]) -> list[float]:
-    """Computes cosine similarity between source and multiple targets."""
-    if not target_vectors:
-        return []
+def get_embedding(text: str) -> np.ndarray:
+    """Generates a semantic embedding vector using Gemini's remote API."""
+    if not text or not settings.GOOGLE_API_KEY:
+        return np.zeros(768) # Default dimension for text-embedding-004
     
-    # Cosine similarity expects 2D arrays
-    source_2d = source_vector.reshape(1, -1)
-    targets_2d = np.array(target_vectors)
-    
-    similarities = cosine_similarity(source_2d, targets_2d)[0]
-    return similarities.tolist()
+    try:
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=text,
+            task_type="retrieval_document"
+        )
+        return np.array(result['embedding'])
+    except Exception as e:
+        print(f"Gemini Embedding Error: {e}")
+        return np.zeros(768)
+
+def cosine_similarity(v1: np.ndarray, v2: np.ndarray) -> float:
+    """Manual cosine similarity calculation to avoid scikit-learn dependency."""
+    dot = np.dot(v1, v2)
+    norm_v1 = np.linalg.norm(v1)
+    norm_v2 = np.linalg.norm(v2)
+    if norm_v1 == 0 or norm_v2 == 0:
+        return 0.0
+    return float(dot / (norm_v1 * norm_v2))
 
 def calculate_match_scores(student_skills: list[str], targets: list[dict], target_key: str) -> list[dict]:
     """
-    Given a list of student skills and a list of targets (jobs or alumni),
-    calculates the semantic similarity score for each target.
-    `target_key` is 'required_skills' for jobs, and 'expertise' for alumni.
+    Calculates semantic similarity using Gemini Embeddings.
+    More accurate and lightweight (API-based) than local sentence-transformers.
     """
-    if not student_skills or not targets:
+    if not student_skills or not targets or not settings.GOOGLE_API_KEY:
+        for t in targets: t["matchScore"] = 0
         return targets
 
-    student_vec = encode_vector(student_skills)
+    # Create a contextual summary for the student to improve match quality
+    student_context = f"A professional with skills in: {', '.join(student_skills)}"
+    student_vec = get_embedding(student_context)
     
-    # Extract target capability strings
-    target_skill_lists = [t.get(target_key, []) for t in targets]
-    target_vecs = [encode_vector(skl) for skl in target_skill_lists]
-    
-    scores = compute_similarity(student_vec, target_vecs)
-    
-    for idx, target in enumerate(targets):
-        # Cosine similarity ranges from -1 to 1. We'll map mostly 0.2->1.0 to a nice percentage.
-        # Ensure it scales to 100%. Max is 1.0.
-        raw_score = scores[idx]
+    for target in targets:
+        target_skills = target.get(target_key, [])
+        # Also include title/role for better semantic context
+        target_title = target.get('title' if 'title' in target else 'role', '')
+        target_context = f"{target_title}. Requirements: {', '.join(target_skills)}"
         
-        if raw_score <= 0.1: 
-            match_score = 0
+        target_vec = get_embedding(target_context)
+        similarity = cosine_similarity(student_vec, target_vec)
+        
+        # Mapping similarity [0.2 - 0.9] to [0 - 100]
+        if similarity < 0.35:
+            score = 0.0
         else:
-            # Map [0.1, 1.0] to [0, 100] with a curve
-            match_score = min(100.0, max(0.0, (raw_score - 0.1) * (100 / 0.9)))
+            score = min(100.0, max(0.0, (similarity - 0.35) * (100 / 0.55)))
             
-        target["matchScore"] = match_score
+        target["matchScore"] = round(float(score), 1)
         
+    # Sort by matchScore descending
+    targets.sort(key=lambda x: x.get("matchScore", 0), reverse=True)
     return targets

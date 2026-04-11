@@ -234,7 +234,7 @@ export default function StudentDashboard() {
             {profile && profile.skills ? (
               matchedJobs.length > 0 ? (
                 matchedJobs.map((job, idx) => (
-                  <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate('/jobs')}>
+                  <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate(`/jobs/${job._id}`)}>
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-bold text-[var(--foreground)]">{job.title}</h4>
@@ -254,7 +254,7 @@ export default function StudentDashboard() {
               )
             ) : (
               jobs.slice(0, 4).map((job, idx) => (
-                <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate('/jobs')}>
+                <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate(`/jobs/${job._id}`)}>
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-bold text-[var(--foreground)]">{job.title}</h4>
