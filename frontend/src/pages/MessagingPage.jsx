@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Search, MoreHorizontal, Video, Edit, Image as ImageIcon, 
   Paperclip, Send, User, Shield, Zap, Sparkles, Phone, Info,
-  Search as SearchIcon, ArrowLeft
+  Search as SearchIcon, ArrowLeft, MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
