@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import PitchDeck from './PitchDeck';
 import { motion } from 'framer-motion';
-import { Loader2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function PublicPitch() {
   const [loading, setLoading] = useState(true);
