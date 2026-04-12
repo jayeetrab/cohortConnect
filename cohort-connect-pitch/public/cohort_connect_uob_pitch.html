@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="slides-format" content="viewport" />
+  <title>Cohort Connect — University of Bristol Pitch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-bg: #18181B;
+      --color-bg-deep: #0F0F12;
+      --color-surface: #27272A;
+      --color-text: #FAFAFA;
+      --color-text-secondary: #E4E4E7;
+      --color-text-muted: #A1A1AA;
+      --color-accent-1: #F97316;
+      --color-accent-2: #14B8A6;
+      --color-accent-3: #FEF3C7;
+      --color-glass-bg: rgba(255,255,255,0.05);
+      --color-glass-border: rgba(255,255,255,0.08);
+      --color-vignette: rgba(0,0,0,0.42);
+      --font-display: 'Archivo Black', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+  </style>
+  <style>
+    :root { --color-bg: #18181B; --color-text: #FAFAFA; --glow-color-rgb: 249,115,22; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { background: var(--color-bg); margin: 0; }
+    body { font-family: var(--font-body); color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; }
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+    .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+    .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1180px; padding: clamp(1.5rem, 4vw, 4rem); }
+    .nav-controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; background: rgba(24,24,27,0.7); backdrop-filter: blur(10px); padding: 10px 24px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.08); }
+    .nav-btn { width: 40px; height: 40px; border: none; background: rgba(255,255,255,0.06); color: #F97316; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display:flex; align-items:center; justify-content:center; }
+    .slide-dots { display:flex; gap:8px; }
+    .slide-dots .dot { width:10px; height:10px; border-radius:50%; background: rgba(255,255,255,0.15); cursor:pointer; transition: all .3s; }
+    .slide-dots .dot.active { background:#F97316; transform:scale(1.25); }
+    .slide-counter { font-size:.8rem; color:#A1A1AA; min-width:40px; text-align:center; }
+    .reveal { opacity:0; transform:translateY(20px); }
+    .gradient-mesh { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+    .blob { position:absolute; border-radius:50%; filter: blur(80px); animation: float-slow 12s ease-in-out infinite; }
+    .blob:nth-child(2) { animation: float-drift 16s ease-in-out infinite; }
+    .blob:nth-child(3) { animation: float-slow 18s ease-in-out infinite reverse; }
+    @keyframes float-slow { 0% { transform: translate(0,0) scale(1);} 25% { transform: translate(50px,-40px) scale(1.08);} 50% { transform: translate(-40px,30px) scale(.92);} 75% { transform: translate(30px,20px) scale(1.05);} 100% { transform: translate(0,0) scale(1);} }
+    @keyframes float-drift { 0% { transform: translate(0,0) scale(1) rotate(0deg);} 33% { transform: translate(-50px,-60px) scale(1.12) rotate(3deg);} 66% { transform: translate(40px,25px) scale(.9) rotate(-2deg);} 100% { transform: translate(0,0) scale(1) rotate(0deg);} }
+    @keyframes float { 0%,100% { transform:translateY(0);} 50% { transform:translateY(-15px);} }
+    .slide::before { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-repeat:repeat; background-size:256px 256px; opacity:.03; mix-blend-mode:overlay; }
+    .slide::after { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.42) 100%); }
+    .text-glow { text-shadow: 0 0 20px rgba(249,115,22,.4), 0 0 40px rgba(249,115,22,.15); }
+    .stat-glow { text-shadow: 0 0 24px rgba(249,115,22,.45), 0 0 50px rgba(249,115,22,.2); }
+    .metric-card, .feature-card, .summary-card, .risk-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border:1px solid rgba(255,255,255,0.08); border-radius: 24px; }
+    .feature-card:hover, .metric-card:hover, .summary-card:hover, .risk-card:hover { transform: translateY(-4px); box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+    .bar-track { width:100%; height:24px; border-radius:999px; background: rgba(255,255,255,.08); overflow:hidden; }
+    .bar-fill { height:100%; border-radius:999px; background: linear-gradient(90deg, #F97316 0%, #14B8A6 100%); width:0%; }
+    .timeline-line { position:absolute; left:26px; top:0; bottom:0; width:2px; background: linear-gradient(180deg, #F97316, #14B8A6); opacity:.8; }
+    .timeline-dot { width:14px; height:14px; border-radius:50%; background:#F97316; box-shadow:0 0 18px rgba(249,115,22,.6); position:relative; z-index:2; margin-top:6px; }
+    .mouse-spotlight { position:fixed; inset:0; z-index:99; pointer-events:none; }
+    .uob-pill { border:1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06); border-radius:999px; padding:.45rem .9rem; font-size:.85rem; color:#E4E4E7; }
+    .logo-badge { display:inline-flex; align-items:center; justify-content:center; width:108px; height:108px; margin:0 auto 1.25rem; border-radius:28px; background: linear-gradient(135deg, rgba(249,115,22,.22), rgba(20,184,166,.16)); border:1px solid rgba(255,255,255,.12); box-shadow: 0 20px 60px rgba(0,0,0,.25); animation: float 3s ease-in-out infinite; }
+    .particle-canvas, .particle-canvas-ambient { position:absolute; inset:0; z-index:1; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .2s !important; } }
+  </style>
+</head>
+<body>
+<div class="mouse-spotlight"></div>
+<div class="deck">
+  <div class="slide slide-1 active" data-slide="1">
+    <div class="gradient-mesh">
+      <div class="blob" style="width: 520px; height: 520px; top: -120px; right: -100px; background: #F97316; opacity: .15;"></div>
+      <div class="blob" style="width: 340px; height: 340px; bottom: -70px; left: -40px; background: #14B8A6; opacity: .11;"></div>
+      <div class="blob" style="width: 240px; height: 240px; top: 42%; left: 18%; background: #FEF3C7; opacity: .08;"></div>
+    </div>
+    <canvas class="particle-canvas"></canvas>
+    <div class="content text-center">
+      <div class="logo-badge reveal">
+        <svg width="58" height="58" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Cohort Connect icon">
+          <circle cx="18" cy="20" r="8" fill="#F97316"/>
+          <circle cx="40" cy="18" r="7" fill="#14B8A6"/>
+          <circle cx="31" cy="39" r="9" fill="#FEF3C7"/>
+          <path d="M23 23L34 33M25 18H33M22 28L27 33M38 24L34 31" stroke="#FAFAFA" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="flex items-center justify-center gap-3 mb-5 flex-wrap reveal">
+        <span class="uob-pill">University of Bristol pitch</span>
+        <span class="uob-pill">AI employability platform</span>
+        <span class="uob-pill">Closed-loop talent marketplace</span>
+      </div>
+      <h1 class="font-display text-[clamp(2.5rem,6vw,5rem)] leading-[0.95] tracking-tight mb-4 bg-linear-to-r from-accent-1 via-accent-3 to-accent-2 bg-clip-text text-transparent reveal">COHORT CONNECT</h1>
+      <p class="text-[clamp(1rem,1.8vw,1.45rem)] text-text-secondary max-w-4xl mx-auto reveal">A placement intelligence platform that turns CVs, alumni networks, employer demand, and live cohort analytics into faster student outcomes.</p>
+      <p class="text-sm tracking-[6px] uppercase text-text-muted mt-5 reveal">Pitch deck for University of Bristol adoption</p>
+    </div>
+  </div>
+
+  <div class="slide slide-2" data-slide="2">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-80px;right:-60px;background:#F97316;opacity:.08"></div><div class="blob" style="width:260px;height:260px;bottom:-60px;left:-30px;background:#14B8A6;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">The problem</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">Placements are still managed like admin, not like a talent engine</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-1">Students miss warm access</h3>
+          <p class="text-text-secondary text-lg">Students depend on cold applications and fragmented job boards, while alumni who could help are hard to identify and activate at scale.</p>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-2">Employers search with weak signals</h3>
+          <p class="text-text-secondary text-lg">Keyword search misses strong candidates whose skills are described differently, creating false negatives and slower hiring.</p>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-3">Placement teams work manually</h3>
+          <p class="text-text-secondary text-lg">Career services still rely on email chains, static PDFs, and spreadsheet tracking, limiting visibility, speed, and scalability.</p>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-1">Universities lose live insight</h3>
+          <p class="text-text-secondary text-lg">Without closed-loop tracking, programmes cannot see what skills drive offers, which channels convert, or where curriculum gaps sit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-3" data-slide="3">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;left:-60px;background:#14B8A6;opacity:.09"></div><div class="blob" style="width:280px;height:280px;bottom:-80px;right:-40px;background:#F97316;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">The answer</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">One platform connecting students, alumni, employers, and faculty</h2>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">📄</div><h3 class="font-bold text-xl mb-2">AI profile creation</h3><p class="text-text-secondary">Upload a CV once; the platform extracts skills, projects, experience, and builds a searchable profile automatically.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🧠</div><h3 class="font-bold text-xl mb-2">Semantic matching</h3><p class="text-text-secondary">Natural-language search maps employer needs to student capability, not just exact keywords on a PDF.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🤝</div><h3 class="font-bold text-xl mb-2">Alumni activation</h3><p class="text-text-secondary">The system identifies relevant alumni, drafts referral emails, and reduces the friction of giving back.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">📈</div><h3 class="font-bold text-xl mb-2">Live dashboards</h3><p class="text-text-secondary">Placement teams track searches, referrals, interviews, offers, and skill demand in real time.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🕶️</div><h3 class="font-bold text-xl mb-2">Blind hiring mode</h3><p class="text-text-secondary">Names, gender, and photos can be hidden so employers review skill alignment first.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🧾</div><h3 class="font-bold text-xl mb-2">Auto-brochure output</h3><p class="text-text-secondary">Generate employer-ready cohort brochures and outreach assets without manual PowerPoint rebuilding.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-4" data-slide="4">
+    <div class="gradient-mesh"><div class="blob" style="width:420px;height:420px;top:-120px;right:-100px;background:#F97316;opacity:.09"></div><div class="blob" style="width:240px;height:240px;bottom:-40px;left:-20px;background:#FEF3C7;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Why this matters</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-10 reveal">Value for every stakeholder</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-8 border-l-4 border-accent-1 reveal"><h3 class="font-bold text-xl mb-3">Students</h3><p class="text-text-secondary text-lg">Receive fit-scored opportunities, CV feedback, alumni connections, and a clear hireability improvement path.</p></div>
+        <div class="summary-card p-8 border-l-4 border-accent-2 reveal"><h3 class="font-bold text-xl mb-3">Employers</h3><p class="text-text-secondary text-lg">Search the cohort in plain English, discover stronger matches, and send personalised outreach faster.</p></div>
+        <div class="summary-card p-8 border-l-4 border-accent-3 reveal"><h3 class="font-bold text-xl mb-3">Alumni</h3><p class="text-text-secondary text-lg">Act as connectors and mentors with drafted referrals, tracked impact, and lighter time commitment.</p></div>
+        <div class="summary-card p-8 border-l-4 border-accent-1 reveal"><h3 class="font-bold text-xl mb-3">University of Bristol</h3><p class="text-text-secondary text-lg">Build a branded, measurable employability infrastructure that can scale across programmes and become a model for UK higher education.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-5" data-slide="5">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-100px;left:-50px;background:#14B8A6;opacity:.08"></div><div class="blob" style="width:280px;height:280px;bottom:-90px;right:-50px;background:#F97316;opacity:.08"></div></div>
+    <canvas class="particle-canvas-ambient"></canvas>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">User journey</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">How the closed loop works</h2>
+      <div class="relative pl-0">
+        <div class="timeline-line"></div>
+        <div class="grid gap-5">
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">1. Student uploads CV</h3><p class="text-text-secondary">The profile agent extracts skills, projects, experience, and embeddings for semantic understanding.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">2. Employer searches naturally</h3><p class="text-text-secondary">A recruiter describes the ideal candidate in plain language rather than forcing keyword filters.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">3. Platform ranks best matches</h3><p class="text-text-secondary">Candidates are scored by semantic fit, with reasons, strengths, and gaps surfaced instantly.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">4. Alumni referrals are drafted</h3><p class="text-text-secondary">If a relevant alumnus exists, the platform generates a warm referral email for approval in seconds.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">5. University learns from outcomes</h3><p class="text-text-secondary">Searches, interviews, offers, and channel performance feed dashboards and future curriculum insight.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-6" data-slide="6">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-70px;right:-60px;background:#FEF3C7;opacity:.08"></div><div class="blob" style="width:300px;height:300px;bottom:-60px;left:-40px;background:#14B8A6;opacity:.08"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">What makes it different</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">Cohort Connect vs current alternatives</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-8 reveal">
+          <h3 class="font-bold text-xl mb-4 text-accent-1">Typical systems</h3>
+          <ul class="space-y-4 text-lg text-text-secondary">
+            <li>Keyword-only search misses nuance.</li>
+            <li>Manual referral writing creates friction.</li>
+            <li>Static cohort brochures go out of date fast.</li>
+            <li>Limited visibility into interview and offer conversion.</li>
+            <li>Students, alumni, and employers operate in silos.</li>
+          </ul>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="font-bold text-xl mb-4 text-accent-2">Cohort Connect</h3>
+          <ul class="space-y-4 text-lg text-text-secondary">
+            <li>Semantic job-to-student matching with explainable fit.</li>
+            <li>Agentic drafting for referrals and outreach.</li>
+            <li>Live cohort brochures and dashboards.</li>
+            <li>Closed-loop lifecycle tracking from CV upload to offer.</li>
+            <li>Built specifically for university employability workflows.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-7" data-slide="7">
+    <div class="gradient-mesh"><div class="blob" style="width:430px;height:430px;top:-120px;right:-100px;background:#F97316;opacity:.1"></div><div class="blob" style="width:260px;height:260px;bottom:-50px;left:-30px;background:#14B8A6;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Pilot metrics</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">The MVP is designed around measurable wins</h2>
+      <div class="grid grid-cols-4 gap-5 mb-8">
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">45</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Students onboarded</div><div class="text-text-secondary">Initial target for the MSc pilot cohort</div></div>
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">5</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Employers engaged</div><div class="text-text-secondary">Early proof of semantic hiring demand</div></div>
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">50%</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Referral interview rate</div><div class="text-text-secondary">Phase 2 success target for alumni referrals</div></div>
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">80%</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Placement ambition</div><div class="text-text-secondary">Phase 3 target once workflow matures</div></div>
+      </div>
+      <div class="summary-card p-7 reveal">
+        <h3 class="font-bold text-xl mb-5">Illustrative outcomes dashboard</h3>
+        <div class="grid gap-4">
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Semantic search</div><div class="bar-track"><div class="bar-fill" data-width="78"></div></div><div class="text-right text-accent-1 font-bold">78</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Employer fit score</div><div class="bar-track"><div class="bar-fill" data-width="94"></div></div><div class="text-right text-accent-1 font-bold">94</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Profile completeness</div><div class="bar-track"><div class="bar-fill" data-width="95"></div></div><div class="text-right text-accent-1 font-bold">95</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Referral conversion</div><div class="bar-track"><div class="bar-fill" data-width="50"></div></div><div class="text-right text-accent-1 font-bold">50</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-8" data-slide="8">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-90px;left:-70px;background:#14B8A6;opacity:.08"></div><div class="blob" style="width:290px;height:290px;bottom:-70px;right:-50px;background:#FEF3C7;opacity:.08"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Architecture</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.15rem)] mb-8 reveal">Built on a practical, modern AI stack</h2>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Frontend</h3><p class="text-text-secondary">Student, alumni, employer, and admin portals in React or Vue with responsive dashboards and upload flows.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Application layer</h3><p class="text-text-secondary">FastAPI powers CV upload, profile management, job matching, referral workflows, analytics, and authentication.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Agentic AI</h3><p class="text-text-secondary">LangChain and LangGraph orchestrate CV parsing, matching, referral drafting, and outcome analytics agents.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">LLM layer</h3><p class="text-text-secondary">Gemini or GPT-class models support structured extraction, match explanations, and outreach generation.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Data layer</h3><p class="text-text-secondary">PostgreSQL with pgvector stores relational data and embeddings in one university-manageable stack.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Governance</h3><p class="text-text-secondary">Supports OAuth/JWT, consent-led data use, blind hiring, audit logs, and GDPR-aligned operation.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-9" data-slide="9">
+    <div class="gradient-mesh"><div class="blob" style="width:420px;height:420px;top:-120px;right:-100px;background:#F97316;opacity:.09"></div><div class="blob" style="width:260px;height:260px;bottom:-60px;left:-30px;background:#14B8A6;opacity:.09"></div></div>
+    <canvas class="particle-canvas-ambient"></canvas>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Rollout</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">A realistic path from pilot to university-wide model</h2>
+      <div class="grid grid-cols-4 gap-5">
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-1 mb-3">Phase 1</div><h3 class="font-bold text-lg mb-2">Months 1–2</h3><p class="text-text-secondary">MVP with CV upload, semantic search, job matching, and a basic admin dashboard for one Bristol cohort.</p></div>
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-2 mb-3">Phase 2</div><h3 class="font-bold text-lg mb-2">Months 3–4</h3><p class="text-text-secondary">Add alumni portal, referral automation, hireability score, and deeper analytics on conversions.</p></div>
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-3 mb-3">Phase 3</div><h3 class="font-bold text-lg mb-2">Months 5–6</h3><p class="text-text-secondary">Introduce blind hiring, cohort brochure generation, richer reporting, and scaling for broader programme adoption.</p></div>
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-1 mb-3">Phase 4</div><h3 class="font-bold text-lg mb-2">Months 7–12</h3><p class="text-text-secondary">Expand to multi-tenant architecture, white-label university branding, and a repeatable market model.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-10" data-slide="10">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-80px;left:-60px;background:#FEF3C7;opacity:.08"></div><div class="blob" style="width:310px;height:310px;bottom:-70px;right:-50px;background:#F97316;opacity:.08"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Business case</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">High strategic upside with manageable pilot cost</h2>
+      <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="metric-card p-7 text-center reveal"><div class="text-5xl stat-glow font-display">£15k–£20k</div><div class="mt-3 uppercase tracking-[4px] text-text-muted">Estimated pilot budget</div></div>
+        <div class="metric-card p-7 text-center reveal"><div class="text-5xl stat-glow font-display">2–3</div><div class="mt-3 uppercase tracking-[4px] text-text-muted">Developers for MVP</div></div>
+        <div class="metric-card p-7 text-center reveal"><div class="text-5xl stat-glow font-display">60 sec</div><div class="mt-3 uppercase tracking-[4px] text-text-muted">Target brochure generation time</div></div>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Why Bristol should care</h3><p class="text-text-secondary text-lg">This is a visible employability differentiator, a stronger employer relationship tool, and a data source for programme quality improvement.</p></div>
+        <div class="summary-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Why now</h3><p class="text-text-secondary text-lg">Agentic AI frameworks and vector-based semantic matching are mature enough to deliver a credible first-mover advantage in UK higher education.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-11" data-slide="11">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-80px;right:-60px;background:#14B8A6;opacity:.08"></div><div class="blob" style="width:280px;height:280px;bottom:-60px;left:-40px;background:#F97316;opacity:.09"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Risk and trust</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">Governance is part of the product, not an afterthought</h2>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="risk-card p-7 border-l-4 border-accent-1 reveal"><h3 class="font-bold text-xl mb-3">Data privacy</h3><p class="text-text-secondary">Use UK-hosted storage, explicit consent, delete rights, and controlled profile visibility for students.</p></div>
+        <div class="risk-card p-7 border-l-4 border-accent-2 reveal"><h3 class="font-bold text-xl mb-3">Fairness</h3><p class="text-text-secondary">Audit match outcomes, recommend blind hiring by default, and monitor downranking patterns over time.</p></div>
+        <div class="risk-card p-7 border-l-4 border-accent-3 reveal"><h3 class="font-bold text-xl mb-3">Quality assurance</h3><p class="text-text-secondary">Validate CV parsing, compare semantic ranking to expert judgment, and run user feedback cycles before scale-up.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-12" data-slide="12">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:520px;height:520px;top:-120px;right:-100px;background:#F97316;opacity:.15"></div>
+      <div class="blob" style="width:340px;height:340px;bottom:-80px;left:-40px;background:#14B8A6;opacity:.12"></div>
+      <div class="blob" style="width:220px;height:220px;top:35%;left:20%;background:#FEF3C7;opacity:.09"></div>
+    </div>
+    <canvas class="particle-canvas"></canvas>
+    <div class="content text-center">
+      <div class="text-[96px] mb-4 reveal">🚀</div>
+      <h2 class="font-display text-[clamp(2.5rem,5vw,4.5rem)] bg-linear-to-r from-accent-1 via-accent-3 to-accent-2 bg-clip-text text-transparent mb-4 reveal">Ask</h2>
+      <p class="text-[clamp(1.1rem,2vw,1.6rem)] text-text-secondary max-w-4xl mx-auto mb-6 reveal">Approve a pilot with one Bristol cohort, align careers and faculty sponsors, and use Cohort Connect to turn employability into a measurable university capability.</p>
+      <div class="grid grid-cols-3 gap-5 max-w-5xl mx-auto">
+        <div class="metric-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-text-muted mb-2">Immediate next step</div><div class="font-bold text-lg">Pilot approval</div></div>
+        <div class="metric-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-text-muted mb-2">Operational step</div><div class="font-bold text-lg">Nominate programme and careers leads</div></div>
+        <div class="metric-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-text-muted mb-2">Strategic step</div><div class="font-bold text-lg">Position Bristol as a UK-first model</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-controls">
+  <button class="nav-btn" aria-label="Previous slide" onclick="changeSlide(-1)">&#8249;</button>
+  <div class="slide-dots" id="dots"></div>
+  <button class="nav-btn" aria-label="Next slide" onclick="changeSlide(1)">&#8250;</button>
+  <span class="slide-counter" id="counter">1 / 12</span>
+</div>
+
+<script>
+let current = 1;
+const total = document.querySelectorAll('.slide').length;
+const dotsContainer = document.getElementById('dots');
+const counter = document.getElementById('counter');
+for (let i = 1; i <= total; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i === 1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+function goToSlide(n) {
+  const prev = document.querySelector('.slide.active');
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (prev) prev.classList.remove('active');
+  if (next) { next.classList.add('active'); animateSlide(next); }
+  current = n; updateNav();
+}
+function changeSlide(dir) { let next = current + dir; if (next < 1) next = total; if (next > total) next = 1; goToSlide(next); }
+function updateNav() { document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current)); counter.textContent = current + ' / ' + total; }
+document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); } });
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
+function animateSlide(slide) {
+  slide.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.offsetHeight;
+    const delay = i * 0.08;
+    el.style.transition = `opacity 0.35s ease ${delay}s, transform 0.35s ease ${delay}s`;
+    el.style.opacity = '1'; el.style.transform = 'translateY(0px)';
+  });
+  slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => {
+    bar.classList.add('fill-init'); bar.style.width = '0%'; bar.style.transition = `width 0.5s ease ${i * 0.08}s`; bar.offsetHeight; bar.style.width = bar.dataset.width + '%';
+  });
+}
+document.addEventListener('mousemove', (e) => {
+  const spotlight = document.querySelector('.mouse-spotlight');
+  spotlight.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(249,115,22,0.06), transparent 40%)`;
+});
+window.initParticles = function(canvas, options) {
+  if (!canvas) return; const ctx = canvas.getContext('2d'); canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+  const interactive = options.interactive !== false; const count = options.count || (interactive ? 55 : 18); let mx = -1000, my = -1000;
+  const particles = Array.from({ length: count }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, size: Math.random() * 2.5 + 0.8, alpha: Math.random() * 0.35 + 0.1 }));
+  if (interactive) { canvas.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; }); canvas.addEventListener('mouseleave', () => { mx = -1000; my = -1000; }); }
+  (function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p => {
+      if (interactive) { const dx = p.x - mx, dy = p.y - my, dist = Math.sqrt(dx*dx + dy*dy) || 1; if (dist < 120) { const force = (120 - dist) / 120 * 2; p.vx += (dx / dist) * force * 0.1; p.vy += (dy / dist) * force * 0.1; } }
+      p.vx *= 0.98; p.vy *= 0.98; p.x += p.vx; p.y += p.vy; if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0; if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = `rgba(249,115,22,${p.alpha})`; ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  })();
+};
+document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, { interactive: true, count: 55 }));
+document.querySelectorAll('.particle-canvas-ambient').forEach(c => window.initParticles(c, { interactive: false, count: 18 }));
+try { animateSlide(document.querySelector('.slide.active')); } catch(e) {}
+</script>
+</body>
+</html>
