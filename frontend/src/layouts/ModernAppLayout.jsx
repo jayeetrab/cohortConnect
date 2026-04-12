@@ -47,9 +47,12 @@ export default function ModernAppLayout({ children, userType = 'student' }) {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 fixed h-full glass-panel border-r z-50">
         <div className="p-6 flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-[var(--foreground)]">
-            Cohort
-          </h1>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black tracking-tighter text-[var(--foreground)] leading-none">
+              Cohort
+            </h1>
+            <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] mt-1">UoB Connect</span>
+          </div>
           <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[var(--foreground)]">
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>

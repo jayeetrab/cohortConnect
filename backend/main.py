@@ -7,6 +7,7 @@ from auth import router as auth_router, get_current_user
 from routers.users import router as users_router
 from routers.interactions import router as interactions_router
 from routers.network import router as network_router
+from routers.pitch import router as pitch_router
 from agents.cv_reader import extract_cv_insights
 from agents.job_matcher import semantic_multi_agent_search
 
@@ -30,6 +31,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(interactions_router)
 app.include_router(network_router)
+app.include_router(pitch_router)
 
 @app.get("/")
 async def root_ping():

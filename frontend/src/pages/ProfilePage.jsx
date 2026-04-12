@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
-import { User, Mail, Briefcase, Award, Edit3, Shield, Star, Check, X } from 'lucide-react';
+import { User, Mail, Briefcase, Award, Edit3, Shield, Star, Check, X, Rocket, Sparkles, ChevronRight } from 'lucide-react';
+import PitchDeck from './PitchDeck';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPitch, setShowPitch] = useState(false);
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
@@ -217,6 +219,59 @@ export default function ProfilePage() {
              </div>
           )}
         </motion.div>
+      </AnimatePresence>
+
+      {/* Strategic Pitch Deck Entry */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="pt-12 border-t border-[var(--border)]"
+      >
+        <div 
+          className="glass-panel p-10 rounded-[2.5rem] bg-gradient-to-br from-red-500/5 to-transparent border border-red-500/10 group hover:border-red-500/30 transition-all duration-500 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-30 transition-opacity">
+            <Rocket size={80} className="text-red-500" />
+          </div>
+          <div className="relative z-10 space-y-6">
+             <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-red-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                   <Sparkles size={24} />
+                </div>
+                <div>
+                   <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">Platform Vision</h3>
+                   <p className="text-xs font-black text-red-500 uppercase tracking-[0.3em]">UoB Strategic Deck</p>
+                </div>
+             </div>
+             <p className="text-[var(--primary-500)] font-medium leading-relaxed max-w-xl">
+               Explore the comprehensive strategy for University of Bristol's global talent dominance. Interactive insights for stakeholders and placement officers.
+             </p>
+             <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                <button 
+                  onClick={() => setShowPitch(true)}
+                  className="flex items-center justify-center gap-3 px-8 py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all"
+                >
+                   Launch Presentation <ChevronRight size={16} />
+                </button>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/pitch`);
+                    alert("Shareable pitch link copied to clipboard!");
+                  }}
+                  className="flex items-center justify-center gap-3 px-8 py-4 bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--foreground)] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black/10 dark:hover:bg-white/10 transition-all"
+                >
+                   Copy Shareable Link
+                </button>
+             </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Pitch Deck Overlay */}
+      <AnimatePresence>
+        {showPitch && (
+          <PitchDeck onClose={() => setShowPitch(false)} />
+        )}
       </AnimatePresence>
     </div>
   );

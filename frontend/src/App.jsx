@@ -12,6 +12,7 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import AlumniDirectory from './pages/AlumniDirectory';
 import JobDetail from './pages/JobDetail';
+import PublicPitch from './pages/PublicPitch';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function RootRedirect() {
@@ -30,6 +31,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<RootRedirect />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/pitch" element={<PublicPitch />} />
           
           <Route path="/student" element={
              <ProtectedRoute allowedRoles={['student', 'alumni']}>
