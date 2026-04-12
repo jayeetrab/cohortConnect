@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import os
 import certifi
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException
@@ -261,4 +259,4 @@ async def search_candidates(query: str = Form(...), current_user: dict = Depends
         return results
     except Exception as e:
         return {"status": "error", "message": f"Server crash: {str(e)}"}
->>>>>>> parent of 8a982cd (kk)
+
