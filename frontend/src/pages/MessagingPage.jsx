@@ -87,76 +87,84 @@ export default function MessagingPage() {
         >
             {activeChat ? (
                <>
-                  <div className="p-6 border-b border-[var(--border)] flex justify-between items-center bg-black/5 dark:bg-white/5">
-                      <div className="flex items-center gap-4">
-                          <button onClick={() => setActiveChat(null)} className="md:hidden p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl text-[var(--primary-500)]">
-                             <ArrowLeft size={20} />
+                   <div className="p-8 border-b border-[var(--border)] flex justify-between items-center bg-white/5 backdrop-blur-3xl">
+                       <div className="flex items-center gap-5">
+                           <button onClick={() => setActiveChat(null)} className="md:hidden p-3 hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl text-[var(--primary-500)]">
+                              <ArrowLeft size={20} />
+                           </button>
+                           <div className="w-12 h-12 rounded-2xl overflow-hidden border border-[var(--border)] shadow-inner">
+                              <img src={`https://ui-avatars.com/api/?name=${activeChat.name.replace(/ /g, '+')}&background=random`} className="w-full h-full" alt={activeChat.name}/>
+                           </div>
+                           <div>
+                              <h3 className="font-black text-lg text-[var(--foreground)] tracking-tight">{activeChat.name}</h3>
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">{activeChat.online ? 'Active Now' : 'Consultant'}</span>
+                              </div>
+                           </div>
+                       </div>
+                       <div className="flex gap-4">
+                          <button className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--primary-600)] hover:text-emerald-500 transition-all hover:scale-105">
+                             <Phone size={20}/>
                           </button>
-                          <div className="w-10 h-10 rounded-xl overflow-hidden border border-[var(--border)]">
-                             <img src={`https://ui-avatars.com/api/?name=${activeChat.name.replace(/ /g, '+')}&background=random`} className="w-full h-full" alt={activeChat.name}/>
-                          </div>
-                          <div>
-                             <h3 className="font-black text-sm text-[var(--foreground)] tracking-tight">{activeChat.name}</h3>
-                             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{activeChat.online ? 'Online' : 'Offline'} • {activeChat.role}</span>
-                          </div>
+                          <button className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--primary-600)] hover:text-emerald-500 transition-all hover:scale-105">
+                             <Video size={20}/>
+                          </button>
+                       </div>
+                   </div>
+                   
+                   <div className="flex-grow p-10 overflow-y-auto flex flex-col gap-8 scrollbar-hide bg-transparent">
+                      <div className="flex justify-center my-6">
+                         <div className="px-6 py-2 rounded-full bg-emerald-500/5 text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] border border-emerald-500/10 backdrop-blur-md">Secure Consultation Channel</div>
                       </div>
-                      <div className="flex gap-4">
-                         <div className="p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--primary-600)] cursor-pointer hover:text-[var(--foreground)] transition-colors">
-                            <Phone size={18}/>
-                         </div>
-                         <div className="p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--primary-600)] cursor-pointer hover:text-[var(--foreground)] transition-colors">
-                            <Video size={18}/>
-                         </div>
-                      </div>
-                  </div>
-                  
-                  <div className="flex-grow p-8 overflow-y-auto flex flex-col gap-6 scrollbar-hide">
-                     <div className="flex justify-center my-4">
-                        <span className="px-4 py-1.5 rounded-full bg-black/5 dark:bg-white/5 text-[10px] font-bold text-[var(--primary-600)] uppercase tracking-widest border border-[var(--border)]">Encrypted Career Consultation</span>
-                     </div>
-
-                     {messages.map((msg, i) => (
-                       <motion.div 
-                         initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                         key={i} 
-                         className={`flex gap-3 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}
-                       >
-                          <div className={`p-4 rounded-2xl max-w-[85%] sm:max-w-[70%] text-sm font-medium shadow-sm ${
-                            msg.sender === 'me' 
-                            ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-tr-none' 
-                            : 'bg-black/5 dark:bg-white/5 text-[var(--foreground)] border border-[var(--border)] rounded-tl-none'
-                          }`}>
-                             {msg.text}
-                             <span className={`block text-[9px] font-bold mt-2 text-right ${msg.sender === 'me' ? 'text-white/60' : 'text-[var(--primary-600)]'}`}>
-                                {msg.time}
-                             </span>
-                          </div>
-                       </motion.div>
-                     ))}
-                  </div>
-
-                  <div className="p-6 bg-black/5 dark:bg-white/10 border-t border-[var(--border)]">
-                     <div className="flex items-center gap-3 bg-[var(--background)] border border-[var(--border)] p-2 rounded-2xl shadow-inner focus-within:border-[var(--primary-500)] transition-all">
-                        <div className="flex gap-1 pl-2">
-                           <button className="p-2 text-[var(--primary-600)] hover:text-emerald-500 transition-colors"><ImageIcon size={20}/></button>
-                           <button className="p-2 text-[var(--primary-600)] hover:text-emerald-500 transition-colors"><Paperclip size={20}/></button>
-                        </div>
-                        <input 
-                           value={inputText}
-                           onChange={(e) => setInputText(e.target.value)}
-                           onKeyPress={(e) => e.key === 'Enter' && setInputText("")}
-                           placeholder="Speak with your consultant..." 
-                           className="flex-grow bg-transparent outline-none p-2 text-sm text-[var(--foreground)] font-medium"
-                        />
-                        <button 
-                          onClick={() => setInputText("")}
-                          className="bg-emerald-500 text-white p-3 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg"
+ 
+                      {messages.map((msg, i) => (
+                        <motion.div 
+                          initial={{ opacity: 0, x: msg.sender === 'me' ? 20 : -20, scale: 0.95 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          key={i} 
+                          className={`flex gap-4 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}
                         >
-                          <Send size={18}/>
-                        </button>
-                     </div>
-                  </div>
+                           <div className={`p-6 rounded-[2rem] max-w-[85%] sm:max-w-[65%] text-sm font-bold shadow-2xl relative group ${
+                             msg.sender === 'me' 
+                             ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-tr-none' 
+                             : 'bg-[var(--background)]/40 backdrop-blur-xl text-[var(--foreground)] border border-[var(--border)] rounded-tl-none'
+                           }`}>
+                              {msg.text}
+                              <span className={`block text-[9px] font-black mt-3 uppercase tracking-widest ${msg.sender === 'me' ? 'text-white/60' : 'text-[var(--primary-600)]'}`}>
+                                 {msg.time}
+                              </span>
+                              {msg.sender === 'me' && (
+                                <div className="absolute -left-12 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <CheckCircle size={14} className="text-emerald-500" />
+                                </div>
+                              )}
+                           </div>
+                        </motion.div>
+                      ))}
+                   </div>
+ 
+                   <div className="p-8 bg-white/5 backdrop-blur-3xl border-t border-[var(--border)]">
+                      <div className="flex items-center gap-4 bg-[var(--background)]/60 border border-[var(--border)] p-3 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.1)] focus-within:border-emerald-500/50 transition-all backdrop-blur-xl">
+                         <div className="flex gap-2 pl-2">
+                            <button className="p-3 text-[var(--primary-600)] hover:text-emerald-500 transition-all hover:scale-110"><ImageIcon size={22}/></button>
+                            <button className="p-3 text-[var(--primary-600)] hover:text-emerald-500 transition-all hover:scale-110"><Paperclip size={22}/></button>
+                         </div>
+                         <input 
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && setInputText("")}
+                            placeholder="Draft your professional response..." 
+                            className="flex-grow bg-transparent outline-none p-3 text-sm text-[var(--foreground)] font-bold placeholder:text-[var(--primary-600)]"
+                         />
+                         <button 
+                           onClick={() => setInputText("")}
+                           className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_8px_16px_rgba(16,185,129,0.3)]"
+                         >
+                           <Send size={20}/>
+                         </button>
+                      </div>
+                   </div>
                </>
             ) : (
                <div className="flex-grow flex flex-col items-center justify-center text-center p-12 space-y-6">

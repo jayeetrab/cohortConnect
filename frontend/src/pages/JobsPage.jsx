@@ -61,7 +61,11 @@ export default function JobsPage() {
                  displayedJobs.map((job, idx) => (
                     <div 
                        key={job._id || idx} 
-                       onClick={() => navigate(`/jobs/${job._id || job.id}`)}
+                       onClick={() => {
+                         const jobId = String(job._id || job.id);
+                         console.log("Navigating to job details:", jobId);
+                         navigate(`/jobs/${jobId}`);
+                       }}
                        className="p-6 hover:bg-black/5 dark:hover:bg-white/5 transition-colors grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-5 items-start group cursor-pointer"
                     >
                          <div className="w-16 h-16 bg-[var(--background)] rounded-2xl flex items-center justify-center border border-[var(--border)] flex-shrink-0 shadow-sm">

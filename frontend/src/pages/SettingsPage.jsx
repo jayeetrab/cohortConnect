@@ -128,15 +128,19 @@ export default function SettingsPage() {
                       </div>
 
                       {item.type === 'toggle' ? (
-                        <button 
-                          onClick={() => handleToggle(item.key)}
-                          className={`w-14 h-8 rounded-full transition-all relative flex items-center p-1 ${settings[item.key] ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-[var(--border)] border border-[var(--border)]'}`}
-                        >
-                          <motion.div 
-                            animate={{ x: settings[item.key] ? 24 : 0 }}
-                            className={`w-6 h-6 rounded-full shadow-lg ${settings[item.key] ? 'bg-white' : 'bg-[var(--primary-600)]'}`}
-                          />
-                        </button>
+                        <div className="flex items-center gap-4">
+                          <button 
+                            onClick={() => handleToggle(item.key)}
+                            className={`w-16 h-9 rounded-full transition-all relative flex items-center p-1.5 ${settings[item.key] ? 'bg-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]' : 'bg-[var(--border)] border border-[var(--border)]'}`}
+                          >
+                            <motion.div 
+                              layout
+                              animate={{ x: settings[item.key] ? 28 : 0 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                              className={`w-6 h-6 rounded-full shadow-2xl ${settings[item.key] ? 'bg-white' : 'bg-[var(--primary-600)]'}`}
+                            />
+                          </button>
+                        </div>
                       ) : (
                         <ChevronRight className={`text-[var(--primary-500)] transition-transform ${activeForm === item.id ? 'rotate-90' : ''}`} />
                       )}
