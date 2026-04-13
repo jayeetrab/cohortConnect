@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Search, Star } from 'lucide-react';
-import api from '../api/axios';
+import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 export default function AlumniDirectory() {

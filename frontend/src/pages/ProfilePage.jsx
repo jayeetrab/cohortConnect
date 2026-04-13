@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
+import api from '../api/client';
 import { User, Mail, Briefcase, Shield, Edit3, Check, X, Star } from 'lucide-react';
 
 export default function ProfilePage() {

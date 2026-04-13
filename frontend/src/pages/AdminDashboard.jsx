@@ -4,7 +4,7 @@ import {
   Users, Briefcase, TrendingUp, Activity, Database,
   ShieldAlert, CheckCircle, AlertCircle, Server
 } from 'lucide-react';
-import api from '../api/axios';
+import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 const StatCard = ({ label, value, sub, icon, color = 'orange', delay = 0 }) => {

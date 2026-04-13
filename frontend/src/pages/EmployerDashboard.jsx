@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Users, Briefcase, X, AlertCircle, CheckCircle } from 'lucide-react';
-import api from '../api/axios';
+import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 const ReferralModal = ({ data, onClose }) => {

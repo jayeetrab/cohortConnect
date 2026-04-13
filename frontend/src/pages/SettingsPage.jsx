@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/axios';
+import api from '../api/client';
 import {
   Shield, Lock, Globe, Eye, Mail, Zap, Moon, Sun,
   LogOut, CheckCircle, AlertCircle, Fingerprint,
