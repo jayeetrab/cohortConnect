@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import {
-  Home, Briefcase, Users, MessageSquare,
+import { 
+  Home, Briefcase, Users, MessageSquare, 
   Settings, LogOut, User, Moon, Sun, Rocket
 } from 'lucide-react';
 
@@ -55,7 +54,7 @@ export default function ModernAppLayout({ children, userType = 'student' }) {
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
         </div>
-
+        
         <nav className="flex-1 px-4 space-y-1 mt-2">
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
@@ -63,8 +62,9 @@ export default function ModernAppLayout({ children, userType = 'student' }) {
               <button
                 key={item.label}
                 onClick={() => handleNavigation(item.path)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all relative ${isActive ? 'text-[var(--foreground)] font-medium' : 'text-[var(--primary-600)] hover:text-[var(--foreground)] hover:bg-black/5 dark:hover:bg-white/5'
-                  }`}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all relative ${
+                  isActive ? 'text-[var(--foreground)] font-medium' : 'text-[var(--primary-600)] hover:text-[var(--foreground)] hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
               >
                 {isActive && (
                   <motion.div
@@ -128,8 +128,9 @@ export default function ModernAppLayout({ children, userType = 'student' }) {
             <button
               key={item.label}
               onClick={() => handleNavigation(item.path)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${isActive ? 'text-[var(--foreground)]' : 'text-[var(--primary-600)] hover:text-[var(--foreground)]'
-                }`}
+              className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+                isActive ? 'text-[var(--foreground)]' : 'text-[var(--primary-600)] hover:text-[var(--foreground)]'
+              }`}
             >
               <item.icon size={22} />
               <span className="text-[10px] font-medium">{item.label}</span>
