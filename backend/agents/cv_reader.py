@@ -24,9 +24,7 @@ async def extract_cv_insights(file_path: str) -> dict:
             )
             chain = prompt | llm | parser
             result = await chain.ainvoke({"text": text})
-            parsed_data = result.model_dump()
-            parsed_data["raw_text"] = text
-            return parsed_data
+            return result.model_dump()
             
         else:
             # Fallback if no LLM key is configured in the `.env` yet
@@ -41,8 +39,7 @@ async def extract_cv_insights(file_path: str) -> dict:
                 "hireability_score": 94,
                 "improvement_feedback": [
                     "Include more quantitative metrics on your recent projects to highlight impact."
-                ],
-                "raw_text": text
+                ]
             }
             
     except Exception as e:

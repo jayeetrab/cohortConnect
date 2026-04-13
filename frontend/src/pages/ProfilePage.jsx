@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -40,13 +39,13 @@ export default function ProfilePage() {
         role: formData.role || undefined,
         skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean)
       };
-
+      
       const res = await axios.put('/users/me', payload);
-      if (res.data.status === 'success') {
-        setProfile(prev => ({ ...prev, ...payload }));
-        setIsEditing(false);
+      if(res.data.status === 'success') {
+         setProfile(prev => ({ ...prev, ...payload }));
+         setIsEditing(false);
       }
-    } catch (err) {
+    } catch(err) {
       console.error("Failed to update profile", err);
     }
   };
@@ -71,13 +70,13 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header Card */}
-      <motion.div
+      <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass-panel rounded-3xl overflow-hidden relative"
       >
         <div className={`h-32 bg-gradient-to-r ${gradient} opacity-80`} />
-
+        
         <div className="px-8 pb-8">
           <div className="flex flex-col md:flex-row items-start md:items-end gap-6 -mt-12 mb-6">
             <div className="w-24 h-24 rounded-2xl bg-[var(--background)] border-4 border-[var(--background)] flex items-center justify-center shadow-xl z-10">
@@ -85,23 +84,23 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1">
               {!isEditing ? (
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--foreground)] to-[var(--primary-600)]">
+                 <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--foreground)] to-[var(--primary-600)]">
                   {profile?.name || user?.name || "User Profile"}
-                </h1>
+                 </h1>
               ) : (
-                <input
-                  autoFocus
-                  type="text"
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="text-2xl font-bold bg-transparent border-b border-[var(--border)] outline-none text-[var(--foreground)] w-full max-w-sm pb-1 mb-1"
-                />
+                 <input 
+                   autoFocus
+                   type="text" 
+                   value={formData.name} 
+                   onChange={e => setFormData({...formData, name: e.target.value})}
+                   className="text-2xl font-bold bg-transparent border-b border-[var(--border)] outline-none text-[var(--foreground)] w-full max-w-sm pb-1 mb-1"
+                 />
               )}
               <p className="text-[var(--primary-500)] font-medium capitalize tracking-wide flex items-center gap-2 mt-1">
                 <Shield size={16} /> {user?.role} Account
               </p>
             </div>
-
+            
             <div className="flex gap-2">
               {!isEditing ? (
                 <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-6 py-2.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition-all font-medium">
@@ -131,7 +130,7 @@ export default function ProfilePage() {
                   <p className="font-medium text-sm mt-0.5">{user?.email}</p>
                 </div>
               </div>
-
+              
               {user.role === 'alumni' && (
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center text-[var(--primary-600)]">
@@ -144,21 +143,21 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={formData.role}
-                        onChange={e => setFormData({ ...formData, role: e.target.value })}
-                        placeholder="Role"
-                        className="bg-transparent border-b border-[var(--border)] outline-none text-sm w-full"
-                      />
-                      <span className="text-[var(--primary-500)]">at</span>
-                      <input
-                        type="text"
-                        value={formData.company}
-                        onChange={e => setFormData({ ...formData, company: e.target.value })}
-                        placeholder="Company"
-                        className="bg-transparent border-b border-[var(--border)] outline-none text-sm w-full"
-                      />
+                       <input 
+                         type="text" 
+                         value={formData.role} 
+                         onChange={e => setFormData({...formData, role: e.target.value})}
+                         placeholder="Role"
+                         className="bg-transparent border-b border-[var(--border)] outline-none text-sm w-full"
+                       />
+                       <span className="text-[var(--primary-500)]">at</span>
+                       <input 
+                         type="text" 
+                         value={formData.company} 
+                         onChange={e => setFormData({...formData, company: e.target.value})}
+                         placeholder="Company"
+                         className="bg-transparent border-b border-[var(--border)] outline-none text-sm w-full"
+                       />
                     </div>
                   )}
                 </div>
@@ -184,7 +183,7 @@ export default function ProfilePage() {
 
       {/* Skills & Expertise */}
       <AnimatePresence mode="popLayout">
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -193,29 +192,29 @@ export default function ProfilePage() {
           <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-[var(--foreground)]">
             <Award className="text-[var(--primary-600)]" /> Professional Capabilities
           </h3>
-
+          
           {!isEditing ? (
-            <div className="flex flex-wrap gap-2">
-              {(profile?.skills || profile?.expertise || []).length > 0 ? (
-                (profile?.skills || profile?.expertise).map((skill, idx) => (
-                  <span key={idx} className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)] text-sm font-medium cursor-default">
-                    {skill}
-                  </span>
-                ))
-              ) : (
-                <span className="text-sm text-[var(--primary-500)] italic">No capabilities mapped yet.</span>
-              )}
-            </div>
+             <div className="flex flex-wrap gap-2">
+               {(profile?.skills || profile?.expertise || []).length > 0 ? (
+                 (profile?.skills || profile?.expertise).map((skill, idx) => (
+                   <span key={idx} className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)] text-sm font-medium cursor-default">
+                     {skill}
+                   </span>
+                 ))
+               ) : (
+                 <span className="text-sm text-[var(--primary-500)] italic">No capabilities mapped yet.</span>
+               )}
+             </div>
           ) : (
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--primary-500)] uppercase tracking-wider">Comma Separated Skills</label>
-              <textarea
-                value={formData.skills}
-                onChange={e => setFormData({ ...formData, skills: e.target.value })}
-                className="w-full bg-transparent border border-[var(--border)] outline-none rounded-xl p-4 text-sm resize-none focus:border-[var(--foreground)] transition-colors h-24"
-                placeholder="Python, React, Machine Learning, UI/UX..."
-              />
-            </div>
+             <div className="space-y-2">
+                <label className="text-xs font-semibold text-[var(--primary-500)] uppercase tracking-wider">Comma Separated Skills</label>
+                <textarea 
+                  value={formData.skills}
+                  onChange={e => setFormData({...formData, skills: e.target.value})}
+                  className="w-full bg-transparent border border-[var(--border)] outline-none rounded-xl p-4 text-sm resize-none focus:border-[var(--foreground)] transition-colors h-24"
+                  placeholder="Python, React, Machine Learning, UI/UX..."
+                />
+             </div>
           )}
         </motion.div>
       </AnimatePresence>

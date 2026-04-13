@@ -1,0 +1,1669 @@
+
+==================================================
+./allcode.py
+==================================================
+import os
+
+output_file = "all_code.txt"
+extensions = ('.py', '.js', '.html', '.css', '.ts')  # adjust as needed
+
+with open(output_file, 'w', encoding='utf-8') as out:
+    for root, dirs, files in os.walk('.'):
+        for fname in files:
+            if fname.endswith(extensions):
+                fpath = os.path.join(root, fname)
+                out.write(f"\n{'='*50}\n{fpath}\n{'='*50}\n")
+                with open(fpath, 'r', encoding='utf-8', errors='ignore') as f:
+                    out.write(f.read())
+                out.write('\n')
+
+==================================================
+./frontend/index.html
+==================================================
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html> 
+
+
+==================================================
+./frontend/vite.config.js
+==================================================
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+
+
+==================================================
+./frontend/eslint.config.js
+==================================================
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
+])
+
+
+==================================================
+./frontend/src/index.css
+==================================================
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f8fafc;
+  --color-primary-500: #64748b;
+  --color-primary-600: #475569;
+  
+  --color-accent-500: #94a3b8;
+  --color-accent-600: #64748b;
+}
+
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: rgba(255, 255, 255, 0.6);
+    --card-foreground: #0f172a;
+    --border: rgba(0, 0, 0, 0.05);
+    --glass-blur: blur(20px);
+    
+    /* Bristol Branding */
+    --bristol-red: #B01C2E;
+    --bristol-red-dark: #8A1524;
+    --pitch-bg: #050505;
+  }
+  
+  .dark {
+    --background: #09090b;
+    --foreground: #fafafa;
+    --card: rgba(24, 24, 27, 0.4);
+    --card-foreground: #fafafa;
+    --border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(24px);
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Minimalist Flat & Ghost Details */
+.glass-panel {
+  background: var(--card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid transparent;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.dark .glass-panel {
+  background: rgba(20, 20, 20, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.heading-gradient {
+  background: var(--foreground);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.4);
+}
+
+/* Pitch Deck Specific Styles */
+.pitch-gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #a1a1a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pitch-red-gradient {
+  background: linear-gradient(135deg, var(--bristol-red) 0%, var(--bristol-red-dark) 100%);
+}
+
+.slide-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: y mandatory;
+}
+
+.slide-container::-webkit-scrollbar {
+  display: none;
+}
+
+.slide-item {
+  scroll-snap-align: start;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card-pitch {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.nav-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.nav-dot.active {
+  background: var(--bristol-red);
+  transform: scale(1.5);
+}
+
+
+==================================================
+./frontend/src/api/axios.js
+==================================================
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://cohortconnect-1.onrender.com'),
+  timeout: 300000 
+});
+
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('cc_token');
+  if(token) {
+      config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
+
+export default api;
+
+
+==================================================
+./backend/auth.py
+==================================================
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from pydantic import BaseModel
+import jwt
+from datetime import datetime, timedelta
+from database import get_db
+from models import UserCreate
+from core.config import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+def verify_password(plain_password, hashed_password):
+    try:
+        if pwd_context.verify(plain_password, hashed_password):
+            return True
+    except Exception:
+        pass
+    # Legacy fallback
+    return plain_password == hashed_password
+
+def get_password_hash(password):
+    # WARNING: Bypassing bcrypt hashing as requested for plain-text login testing
+    return password
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    db = get_db()
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    user = await db.users.find_one({"email": email})
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+@router.post("/register")
+async def register(user: UserCreate):
+    db = get_db()
+    existing_user = await db.users.find_one({"email": user.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    user_dict = user.model_dump()
+    password = user_dict.pop("password")
+    user_dict["hashed_password"] = get_password_hash(password)
+    user_dict["is_active"] = True
+    
+    await db.users.insert_one(user_dict)
+    
+    # Pre-populate specific dashboards for students and alumni
+    if user.role == "alumni":
+        await db.alumni.insert_one({
+            "name": user.name, "role": "New Grad", "company": "Not Specified", "graduation_year": datetime.utcnow().year, "expertise": []
+        })
+    elif user.role == "student":
+        await db.students.insert_one({
+             "name": user.name, "email": user.email, "skills": [], "projects": [], "domain_competency": "Unverified", "hireability_score": 0
+        })
+    
+    access_token = create_access_token(data={"sub": user.email, "role": user.role.value})
+    return {"access_token": access_token, "token_type": "bearer", "role": user.role.value, "name": user.name, "email": user.email}
+
+@router.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    db = get_db()
+    user = await db.users.find_one({"email": form_data.username})
+    if not user or not verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+        
+    access_token = create_access_token(data={"sub": user["email"], "role": user["role"]})
+    return {"access_token": access_token, "token_type": "bearer", "role": user["role"], "name": user["name"], "email": user["email"]}
+
+@router.put("/password")
+async def update_password(payload: PasswordChangeRequest, current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    user = await db.users.find_one({"email": current_user["email"]})
+    if not user or not verify_password(payload.current_password, user["hashed_password"]):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    new_hashed = get_password_hash(payload.new_password)
+    await db.users.update_one({"email": current_user["email"]}, {"$set": {"hashed_password": new_hashed}})
+    return {"status": "success", "message": "Password updated successfully"}
+
+@router.get("/me")
+async def read_users_me(current_user: dict = Depends(get_current_user)):
+    return {"email": current_user["email"], "role": current_user["role"], "name": current_user["name"]}
+
+
+==================================================
+./backend/models.py
+==================================================
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from bson import ObjectId
+from enum import Enum
+
+class PyObjectId(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid objectid")
+        return str(v)
+
+class UserRole(str, Enum):
+    student = "student"
+    employer = "employer"
+    alumni = "alumni"
+    admin = "admin"
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    role: UserRole
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    role: str
+    name: str
+
+class StudentProfile(BaseModel):
+    name: str = "Student User"
+    email: str = ""
+    skills: List[str] = []
+    projects: List[str] = []
+    domain_competency: str = ""
+    hireability_score: int = 0
+    improvement_feedback: List[str] = []
+    cv_text: str = ""
+
+class CVExtraction(BaseModel):
+    skills: List[str]
+    projects: List[str]
+    domain_competency: str
+    hireability_score: int
+    improvement_feedback: List[str]
+
+class JobPosting(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id")
+    title: str
+    company: str
+    description: str
+    required_skills: List[str]
+    location: str
+
+class Alumni(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id")
+    name: str
+    role: str
+    company: str
+    graduation_year: int
+    expertise: List[str]
+
+
+==================================================
+./backend/seed_expanded.py
+==================================================
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+import certifi
+import os
+
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://jayeetrab:mGhnfdMwFeFZwx6L@cohortconnect.lcpylgn.mongodb.net/")
+client = AsyncIOMotorClient(MONGODB_URI, tlsCAFile=certifi.where())
+db = client.cohortconnect
+
+async def seed():
+    print("Clearing existing jobs and alumni...")
+    await db.jobs.drop()
+    await db.alumni.drop()
+    
+    jobs = [
+        # AI/ML & Data
+        {"title": "Machine Learning Engineer", "company": "DeepMind", "description": "Building next-generation RL models. You should be comfortable with PyTorch, large scale training, and advanced calculus.", "required_skills": ["Python", "PyTorch", "Reinforcement Learning", "Deep Learning", "TensorFlow"], "location": "London, UK"},
+        {"title": "AI Researcher (NLP)", "company": "OpenAI", "description": "Research on Transformer architectures and LLM prompt engineering.", "required_skills": ["Python", "Transformers", "NLP", "LLM", "HuggingFace", "LangChain"], "location": "Remote"},
+        {"title": "Senior Data Scientist", "company": "JP Morgan", "description": "Predictive modeling for financial markets. Needs strong stats and big data capability.", "required_skills": ["Python", "SQL", "Statistics", "Machine Learning", "Pandas", "Scikit-learn"], "location": "London, UK"},
+        {"title": "Data Engineer", "company": "Spotify", "description": "Building robust data pipelines to process terabytes of listener data via Kafka and Spark.", "required_skills": ["Python", "SQL", "Spark", "Kafka", "AWS", "Airflow"], "location": "Stockholm / Remote"},
+        {"title": "Quantitative Analyst", "company": "Two Sigma", "description": "Alpha generation and algorithmic trading strategy development.", "required_skills": ["Python", "C++", "Statistics", "Quantitative Finance", "Machine Learning"], "location": "London, UK"},
+        
+        # Software Engineering (Backend/Fullstack)
+        {"title": "Senior Backend Engineer", "company": "Stripe", "description": "Designing high-throughput API systems and managing distributed databases.", "required_skills": ["Go", "Python", "PostgreSQL", "Distributed Systems", "Kafka", "Microservices"], "location": "London, UK"},
+        {"title": "Fullstack Software Engineer", "company": "Amazon", "description": "Working on scalable asynchronous systems with modern web frameworks.", "required_skills": ["React", "Node.js", "TypeScript", "AWS", "MongoDB"], "location": "Bristol, UK"},
+        {"title": "Frontend Developer", "company": "Vercel", "description": "Creating beautiful, high-performance web applications using React and Next.js.", "required_skills": ["React", "Next.js", "Tailwind CSS", "TypeScript", "Framer Motion"], "location": "Remote"},
+        {"title": "Java Backend Engineer", "company": "Barclays", "description": "Developing robust financial microservices.", "required_skills": ["Java", "Spring Boot", "Microservices", "SQL", "Kafka"], "location": "London, UK"},
+        {"title": "Mobile App Developer", "company": "Monzo", "description": "Building seamless fintech experiences for iOS and Android.", "required_skills": ["React Native", "Swift", "Kotlin", "Mobile Development"], "location": "London, UK"},
+        
+        # Cloud, DevOps & Security
+        {"title": "DevOps Engineer", "company": "GitLab", "description": "Setting up CI/CD pipelines, Kubernetes clusters, and monitoring systems.", "required_skills": ["Kubernetes", "Docker", "CI/CD", "AWS", "Terraform", "Linux"], "location": "Remote"},
+        {"title": "Cloud Architect", "company": "AWS", "description": "Designing scalable cloud architectures for enterprise clients.", "required_skills": ["AWS", "System Design", "Cloud Architecture", "Terraform"], "location": "London, UK"},
+        {"title": "Cybersecurity Analyst", "company": "Darktrace", "description": "Threat hunting, penetration testing, and security auditing.", "required_skills": ["Cybersecurity", "Network Security", "Python", "Penetration Testing"], "location": "Cambridge, UK"},
+        {"title": "Site Reliability Engineer", "company": "Google", "description": "Ensuring Google services remain highly available and performant.", "required_skills": ["Go", "Python", "Kubernetes", "Linux", "System Design"], "location": "London, UK"},
+        
+        # Product & Design
+        {"title": "Product Manager", "company": "Airbnb", "description": "Leading product strategy for host experiences.", "required_skills": ["Product Management", "Agile", "Data Analysis", "User Research", "Strategy"], "location": "Remote"},
+        {"title": "UI/UX Designer", "company": "Figma", "description": "Designing intuitive interfaces and interactive prototypes.", "required_skills": ["Figma", "UI/UX Design", "Prototyping", "User Research"], "location": "London, UK"},
+        {"title": "Technical Program Manager", "company": "Meta", "description": "Coordinating large scale engineering initiatives across multiple teams.", "required_skills": ["Program Management", "Agile", "Jira", "Cross-functional Leadership"], "location": "London, UK"},
+        
+        # Specialized/Other
+        {"title": "Blockchain Developer", "company": "Coinbase", "description": "Writing smart contracts and building Web3 integrations.", "required_skills": ["Solidity", "Blockchain", "Web3", "Ethereum", "Cryptography"], "location": "Remote"},
+        {"title": "Hardware Engineer", "company": "Tesla", "description": "Designing chip architecture for self-driving inference.", "required_skills": ["C", "C++", "Embedded Systems", "Verilog", "Hardware Design"], "location": "Bristol, UK"},
+        {"title": "Game Developer", "company": "Epic Games", "description": "Building high-performance physics systems in Unreal Engine.", "required_skills": ["C++", "Unreal Engine", "Game Development", "3D Math"], "location": "Remote"}
+    ]
+    
+    alumnis = [
+        {"name": "Sarah Jenkins", "role": "Senior AI Architect", "company": "DeepMind", "graduation_year": 2018, "expertise": ["Machine Learning", "Transformers", "Python", "PyTorch"]},
+        {"name": "James Chen", "role": "Backend Engineer", "company": "Amazon", "graduation_year": 2021, "expertise": ["AWS", "System Design", "Node.js", "MongoDB"]},
+        {"name": "Sofia Martínez", "role": "Quantitative Analyst", "company": "Goldman Sachs", "graduation_year": 2022, "expertise": ["Risk Analysis", "Python", "R", "Statistics"]},
+        {"name": "Elena Kowalski", "role": "Data Engineer", "company": "Spotify", "graduation_year": 2020, "expertise": ["Data Pipelines", "SQL", "Kafka", "Spark"]},
+        {"name": "David Thorne", "role": "Frontend Lead", "company": "Vercel", "graduation_year": 2019, "expertise": ["React", "Next.js", "Tailwind CSS", "TypeScript"]},
+        {"name": "Amelia Wong", "role": "Product Manager", "company": "Airbnb", "graduation_year": 2017, "expertise": ["Product Management", "Agile", "User Research"]},
+        {"name": "Michael Stevens", "role": "Cybersecurity Specialist", "company": "Darktrace", "graduation_year": 2022, "expertise": ["Cybersecurity", "Network Security", "Penetration Testing"]},
+        {"name": "Raj Patel", "role": "DevOps Engineer", "company": "GitLab", "graduation_year": 2021, "expertise": ["Kubernetes", "Docker", "CI/CD", "Terraform"]},
+        {"name": "Lisa O'Connor", "role": "Blockchain Architect", "company": "Coinbase", "graduation_year": 2020, "expertise": ["Solidity", "Web3", "Cryptography"]},
+        {"name": "Ahmed Al-Farsi", "role": "Cloud Architect", "company": "AWS", "graduation_year": 2018, "expertise": ["Cloud Architecture", "AWS", "System Design"]},
+        {"name": "Emma Wright", "role": "UI/UX Designer", "company": "Figma", "graduation_year": 2023, "expertise": ["Figma", "UI/UX Design", "Prototyping"]},
+        {"name": "Daniel Kim", "role": "Machine Learning Engineer", "company": "OpenAI", "graduation_year": 2021, "expertise": ["NLP", "LLM", "HuggingFace", "LangChain"]},
+        {"name": "Sophia Rossi", "role": "Site Reliability Engineer", "company": "Google", "graduation_year": 2019, "expertise": ["Go", "Linux", "Kubernetes", "System Design"]},
+        {"name": "Lucas Silva", "role": "Mobile Developer", "company": "Monzo", "graduation_year": 2022, "expertise": ["React Native", "Swift", "Kotlin"]},
+        {"name": "William Davies", "role": "Hardware Engineer", "company": "Tesla", "graduation_year": 2020, "expertise": ["C", "C++", "Embedded Systems", "Hardware Design"]},
+        {"name": "Chloe Bennett", "role": "Java Developer", "company": "Barclays", "graduation_year": 2023, "expertise": ["Java", "Spring Boot", "Microservices"]},
+        {"name": "Alex Mercer", "role": "Game Developer", "company": "Epic Games", "graduation_year": 2021, "expertise": ["C++", "Unreal Engine", "Game Development"]},
+        {"name": "Nadia Hassan", "role": "Technical Program Manager", "company": "Meta", "graduation_year": 2018, "expertise": ["Program Management", "Agile", "Cross-functional Leadership"]},
+        {"name": "Oliver Twist", "role": "Data Scientist", "company": "JP Morgan", "graduation_year": 2022, "expertise": ["Python", "SQL", "Pandas", "Machine Learning"]},
+        {"name": "Grace Hopper", "role": "Senior Backend Engineer", "company": "Stripe", "graduation_year": 2017, "expertise": ["Go", "PostgreSQL", "Distributed Systems"]}
+    ]
+
+    await db.jobs.insert_many(jobs)
+    await db.alumni.insert_many(alumnis)
+    print(f"Database seeded with {len(jobs)} jobs and {len(alumnis)} alumni profiles!")
+
+if __name__ == "__main__":
+    asyncio.run(seed())
+
+
+==================================================
+./backend/database.py
+==================================================
+import os
+import certifi
+from motor.motor_asyncio import AsyncIOMotorClient
+from core.config import settings
+
+client = None
+db = None
+
+def get_db():
+    global client, db
+    if client is None:
+        client = AsyncIOMotorClient(settings.MONGODB_URI, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=5000)
+        db = client.cohortconnect
+    return db
+
+async def init_db():
+    d = get_db()
+    # Performance optimization: create indexes
+    await d.users.create_index("email", unique=True)
+    await d.students.create_index("email", unique=True)
+    await d.jobs.create_index("title")
+    await d.alumni.create_index("name")
+
+
+
+==================================================
+./backend/seed.py
+==================================================
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+import certifi
+import os
+
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://jayeetrab:mGhnfdMwFeFZwx6L@cohortconnect.lcpylgn.mongodb.net/")
+client = AsyncIOMotorClient(MONGODB_URI, tlsCAFile=certifi.where())
+db = client.cohortconnect
+
+async def seed():
+    print("Clearing collections...")
+    await db.jobs.drop()
+    await db.alumni.drop()
+    await db.students.drop()
+    
+    jobs = [
+        {"title": "AI Engineer", "company": "Goldman Sachs", "description": "Need someone to build LLMs for financial risk forecasting and quantitative modelling.", "required_skills": ["Python", "LangChain", "Machine Learning", "Finance"], "location": "London, UK"},
+        {"title": "Senior Data Analyst - Credit Risk", "company": "JP Morgan", "description": "Looking for statistical modelling, credit default prediction, and risk analytics expertise.", "required_skills": ["Python", "SQL", "Statistics", "Risk Models"], "location": "London, UK"},
+        {"title": "Fullstack Software Engineer", "company": "Amazon", "description": "Building scalable asynchronous systems with modern Python web frameworks and NoSQL.", "required_skills": ["FastAPI", "MongoDB", "React", "AWS"], "location": "Bristol, UK"},
+        {"title": "Data Scientist", "company": "Barclays", "description": "Deriving insights from large datasets to optimize consumer experience and operations.", "required_skills": ["SQL", "Tableau", "Python"], "location": "London, UK"},
+    ]
+    
+    alumnis = [
+        {"name": "Arpita Sharma", "role": "Data Scientist", "company": "JP Morgan", "graduation_year": 2023, "expertise": ["Machine Learning", "Finance"]},
+        {"name": "James Chen", "role": "Backend Engineer", "company": "Amazon", "graduation_year": 2024, "expertise": ["Cloud", "System Design"]},
+        {"name": "Sofia Martínez", "role": "Quantitative Analyst", "company": "Goldman Sachs", "graduation_year": 2022, "expertise": ["Risk Analysis", "Python", "R"]},
+        {"name": "Elena Kowalski", "role": "Data Engineer", "company": "Barclays", "graduation_year": 2023, "expertise": ["Data Pipelines", "SQL", "AWS"]},
+    ]
+
+    students = [
+        {"name": "Alice Wang", "email": "alice@bristol.ac.uk", "skills": ["Python", "Machine Learning", "Transformers"], "projects": ["Built an LLM for trading"], "domain_competency": "AI & Finance", "hireability_score": 95, "improvement_feedback": ["Show AWS infrastructure skills"]},
+        {"name": "Bob Smith", "email": "bob@bristol.ac.uk", "skills": ["React", "Node.js", "MongoDB"], "projects": ["Social network clone"], "domain_competency": "Fullstack Web", "hireability_score": 88, "improvement_feedback": ["Include more system design details"]},
+        {"name": "Charlie Lee", "email": "charlie@bristol.ac.uk", "skills": ["SQL", "Tableau", "Excel"], "projects": ["Credit risk analysis"], "domain_competency": "Data Analytics", "hireability_score": 92, "improvement_feedback": ["Quantify impact in projects"]},
+        {"name": "Diana Prince", "email": "diana@bristol.ac.uk", "skills": ["Python", "FastAPI", "Docker", "AWS"], "projects": ["High-throughput API"], "domain_competency": "Backend Engineering", "hireability_score": 91, "improvement_feedback": ["Emphasize CI/CD pipelines"]},
+    ]
+    
+    await db.jobs.insert_many(jobs)
+    await db.alumni.insert_many(alumnis)
+    await db.students.insert_many(students)
+    print("Database seeded with jobs, alumni, and realistic student DB profiles!")
+
+if __name__ == "__main__":
+    asyncio.run(seed())
+
+
+==================================================
+./backend/seed_alumni.py
+==================================================
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+
+async def seed_alumni():
+    MONGODB_URI = "mongodb+srv://jayeetrab:mGhnfdMwFeFZwx6L@cohortconnect.lcpylgn.mongodb.net/"
+    client = AsyncIOMotorClient(MONGODB_URI)
+    db = client.get_database("cohortconnect")
+    
+    alumni_data = [
+        {
+            "name": "Sarah Jenkins",
+            "role": "Senior AI Architect",
+            "company": "DeepMind",
+            "graduation_year": 2018,
+            "expertise": ["Reinforcement Learning", "Neural Architecture", "PyTorch"]
+        },
+        {
+            "name": "David Chen",
+            "role": "Quantitative Researcher",
+            "company": "Goldman Sachs",
+            "graduation_year": 2019,
+            "expertise": ["Stochastic Calculus", "High-Frequency Trading", "C++"]
+        },
+        {
+            "name": "Priya Sharma",
+            "role": "Lead Data Scientist",
+            "company": "JP Morgan Chase",
+            "graduation_year": 2020,
+            "expertise": ["Fraud Detection", "XGBoost", "Spark SQL"]
+        },
+        {
+            "name": "Michael Ross",
+            "role": "Blockchain Engineer",
+            "company": "Coinbase",
+            "graduation_year": 2021,
+            "expertise": ["Solidity", "Zero-Knowledge Proofs", "Go"]
+        },
+        {
+            "name": "Elena Rodriguez",
+            "role": "Machine Learning Engineer",
+            "company": "Tesla",
+            "graduation_year": 2017,
+            "expertise": ["Computer Vision", "Autopilot Systems", "CUDA"]
+        },
+        {
+            "name": "James Wilson",
+            "role": "Director of Technology",
+            "company": "Amazon AWS",
+            "graduation_year": 2015,
+            "expertise": ["Distibuted Systems", "Serverless Infrastructure", "Rust"]
+        }
+    ]
+    
+    # Clean and insert
+    await db.alumni.delete_many({})
+    result = await db.alumni.insert_many(alumni_data)
+    print(f"Successfully seeded {len(result.inserted_ids)} alumni nodes into the graph.")
+
+if __name__ == "__main__":
+    asyncio.run(seed_alumni())
+
+
+==================================================
+./backend/main.py
+==================================================
+import os
+import certifi
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from database import get_db
+from auth import router as auth_router, get_current_user
+from routers.users import router as users_router
+from routers.interactions import router as interactions_router
+from routers.network import router as network_router
+from agents.cv_reader import extract_cv_insights
+from agents.job_matcher import semantic_multi_agent_search
+
+from database import get_db, init_db
+
+app = FastAPI(title="Cohort Connect API", description="Advanced Minimal Professional Graph", version="2.0.0")
+
+@app.on_event("startup")
+async def startup_db_client():
+    await init_db()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(interactions_router)
+app.include_router(network_router)
+
+@app.get("/")
+async def root_ping():
+    return {
+        "system": "Cohort Connect Engine v2.0",
+        "status": "online",
+        "documentation": "/docs",
+        "message": "API endpoints are actively serving."
+    }
+
+@app.get("/health")
+async def health_check():
+    db = get_db()
+    # Simple db ping
+    try:
+        await db.command("ping")
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"disconnected: {str(e)}"
+        
+    return {
+        "status": "healthy",
+        "database": db_status,
+        "active_modules": [
+            "authentication",
+            "users",
+            "interactions",
+            "network",
+            "semantic_search",
+            "cv_extraction"
+        ]
+    }
+
+@app.get("/api/jobs")
+
+async def get_jobs():
+    db = get_db()
+    jobs = await db.jobs.find().to_list(100)
+    for j in jobs: j["_id"] = str(j["_id"])
+    return {"status": "success", "data": jobs}
+
+@app.get("/api/alumni")
+async def get_alumni():
+    db = get_db()
+    alums = await db.alumni.find().to_list(100)
+    for a in alums: a["_id"] = str(a["_id"])
+    return {"status": "success", "data": alums}
+from agents.matcher import calculate_match_scores
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import PromptTemplate
+from core.config import settings
+
+@app.get("/api/students")
+async def get_students():
+    db = get_db()
+    students = await db.students.find().to_list(100)
+    for s in students: s["_id"] = str(s["_id"])
+    return {"status": "success", "data": students}
+
+@app.post("/api/upload-cv")
+async def upload_cv(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "student":
+        return {"status": "error", "message": "Access Denied: Only authenticated Students can update capability vectors."}
+        
+    db = get_db()
+    file_location = f"/tmp/{file.filename}"
+    try:
+        content = await file.read()
+        with open(file_location, "wb") as f:
+            f.write(content)
+            
+        insights = await extract_cv_insights(file_location)
+        
+        if os.path.exists(file_location):
+            os.remove(file_location)
+            
+        if "error" in insights:
+            return {"status": "error", "message": insights["error"]}
+        
+        # Save raw CV and metadata to cvs collection
+        raw_text = insights.pop("raw_text", "")
+        cv_doc = {
+            "student_email": current_user["email"],
+            "student_name": current_user["name"],
+            "raw_text": raw_text,
+            "metadata": insights
+        }
+        await db.cvs.update_one({"student_email": current_user["email"]}, {"$set": cv_doc}, upsert=True)
+            
+        profile_update = {"name": current_user["name"], "email": current_user["email"], **insights}
+        await db.students.update_one({"email": current_user["email"]}, {"$set": profile_update}, upsert=True)
+        return {"status": "parsed", "data": profile_update}
+
+    except Exception as e:
+        if os.path.exists(file_location):
+            os.remove(file_location)
+        return {"status": "error", "message": f"Server error processing PDF: {str(e)}"}
+
+@app.get("/api/jobs/matches")
+async def get_job_matches(current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    jobs_cursor = await db.jobs.find().to_list(1000)
+    jobs = []
+    for j in jobs_cursor:
+        j["_id"] = str(j["_id"])
+        jobs.append(j)
+
+    if current_user.get("role") != "student":
+        return {"status": "success", "data": jobs}
+        
+    student = await db.students.find_one({"email": current_user["email"]})
+    if not student or not student.get("skills"):
+        return {"status": "success", "data": jobs}
+        
+    # Semantic Matching Engine
+    matched_jobs = calculate_match_scores(student.get("skills"), jobs, "required_skills")
+    # Return sorted by score descending
+    matched_jobs.sort(key=lambda x: x.get("matchScore", 0), reverse=True)
+    return {"status": "success", "data": matched_jobs}
+
+@app.get("/api/alumni/matches")
+async def get_alumni_matches(current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    alumni_cursor = await db.alumni.find().to_list(1000)
+    alumni = []
+    for a in alumni_cursor:
+        a["_id"] = str(a["_id"])
+        alumni.append(a)
+
+    if current_user.get("role") != "student":
+        return {"status": "success", "data": alumni}
+        
+    student = await db.students.find_one({"email": current_user["email"]})
+    if not student or not student.get("skills"):
+        return {"status": "success", "data": alumni}
+        
+    # Semantic Matching Engine
+    matched_alumni = calculate_match_scores(student.get("skills"), alumni, "expertise")
+    matched_alumni.sort(key=lambda x: x.get("matchScore", 0), reverse=True)
+    return {"status": "success", "data": matched_alumni}
+
+@app.get("/api/jobs/{job_id}/analyze")
+async def analyze_job_match(job_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "student":
+        raise HTTPException(status_code=403, detail="Only students can access job analysis.")
+        
+    from bson.objectid import ObjectId
+    db = get_db()
+    job = await db.jobs.find_one({"_id": ObjectId(job_id)})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found.")
+        
+    cv = await db.cvs.find_one({"student_email": current_user["email"]})
+    if not cv:
+        raise HTTPException(status_code=400, detail="Please upload your CV to generate an analysis.")
+        
+    try:
+        import os
+        os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY or ""
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
+        
+        prompt_template = """
+        You are an expert AI Career Coach. 
+        Job Details:
+        Title: {job_title}
+        Company: {company}
+        Description: {description}
+        Requirements: {requirements}
+        
+        Candidate Skills: {candidate_skills}
+        
+        Task:
+        Provide a concise analysis for this specific candidate against this specific job.
+        Format your response as a JSON dictionary exactly like this:
+        {{
+            "match_reason": "Provide a 2-3 sentence explanation of why they are a good fit.",
+            "missing_skills": ["Skill 1", "Skill 2"],
+            "recommended_courses": ["Course title 1", "Course title 2"],
+            "hireability_advice": "A short, actionable tip."
+        }}
+        """
+        prompt = PromptTemplate(template=prompt_template, input_variables=["job_title", "company", "description", "requirements", "candidate_skills"])
+        chain = prompt | llm
+        
+        result = await chain.ainvoke({
+            "job_title": job.get("title", ""),
+            "company": job.get("company", ""),
+            "description": job.get("description", ""),
+            "requirements": ", ".join(job.get("required_skills", [])),
+            "candidate_skills": ", ".join(cv.get("metadata", {}).get("skills", []))
+        })
+        
+        text_response = result.content
+        import json
+        
+        # Clean JSON fences if present
+        if text_response.startswith("```json"):
+            text_response = text_response.split("```json")[1]
+        if text_response.endswith("```"):
+            text_response = text_response.rsplit("```", 1)[0]
+            
+        analysis_data = json.loads(text_response.strip())
+        return {"status": "success", "analysis": analysis_data}
+        
+    except Exception as e:
+        print(f"GenAI Error: {e}")
+        return {"status": "error", "message": "Failed to run analysis via GenAI engine."}
+
+@app.post("/api/semantic-search")
+async def search_candidates(query: str = Form(...), current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["employer", "admin"]:
+        return {"status": "error", "message": "Access Denied: Only Employers can invoke the semantic search graph."}
+        
+    db = get_db()
+    try:
+        results = await semantic_multi_agent_search(query, db)
+        return results
+    except Exception as e:
+        return {"status": "error", "message": f"Server crash: {str(e)}"}
+
+
+
+==================================================
+./backend/routers/users.py
+==================================================
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional
+from database import get_db
+from auth import get_current_user
+
+router = APIRouter(prefix="/api/users", tags=["users"])
+
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    bio: Optional[str] = None
+    skills: Optional[List[str]] = None
+    projects: Optional[List[str]] = None
+
+@router.get("/me")
+async def get_my_profile(current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    profile = {}
+    if current_user.get("role") == "student":
+        student_data = await db.students.find_one({"email": current_user["email"]})
+        if student_data:
+            student_data["_id"] = str(student_data["_id"])
+            profile = student_data
+    elif current_user.get("role") == "alumni":
+        alumni_data = await db.alumni.find_one({"name": current_user["name"]})
+        if alumni_data:
+            alumni_data["_id"] = str(alumni_data["_id"])
+            profile = alumni_data
+            
+    # Remove sensitive info
+    user_data = {k: v for k, v in current_user.items() if k not in ["hashed_password", "_id"]}
+    return {"user": user_data, "profile": profile}
+
+@router.put("/me")
+async def update_my_profile(profile_data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
+    db = get_db()
+    update_dict = {k: v for k, v in profile_data.model_dump().items() if v is not None}
+    
+    if not update_dict:
+        return {"status": "success", "message": "Nothing to update"}
+    
+    if current_user.get("role") == "student":
+        await db.students.update_one(
+            {"email": current_user["email"]}, 
+            {"$set": update_dict},
+            upsert=True
+        )
+    elif current_user.get("role") == "alumni":
+        await db.alumni.update_one(
+            {"name": current_user["name"]}, 
+            {"$set": update_dict},
+            upsert=True
+        )
+        
+    await db.users.update_one(
+        {"email": current_user["email"]},
+        {"$set": update_dict}
+    )
+    return {"status": "success", "message": "Profile updated"}
+
+
+==================================================
+./backend/routers/network.py
+==================================================
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from core.deps import get_current_user, get_database
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from bson import ObjectId
+
+router = APIRouter(prefix="/api/network", tags=["network"])
+
+class ConnectRequest(BaseModel):
+    target_user_id: str
+
+@router.post("/connect")
+async def request_connection(payload: ConnectRequest, current_user: dict = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_database)):
+    # Simple mockup connection mechanism.
+    # In an advanced setup, this writes to a "connections" collection modeling a graph edge.
+    
+    # Store connection request in the db for the target user.
+    conn_record = {
+        "from_user": current_user["email"],
+        "to_user_id": payload.target_user_id,
+        "status": "pending"
+    }
+    await db.connections.insert_one(conn_record)
+    
+    return {"status": "success", "message": "Connection request sent"}
+
+
+==================================================
+./backend/routers/pitch.py
+==================================================
+
+
+==================================================
+./backend/routers/interactions.py
+==================================================
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional
+from core.deps import get_current_user, get_database
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from bson import ObjectId
+
+router = APIRouter(prefix="/api/interactions", tags=["interactions"])
+
+class LikeAction(BaseModel):
+    item_id: str
+    item_type: str # "alumni", "job", "student"
+    action: str # "like" or "unlike"
+
+@router.post("/like")
+async def toggle_like(payload: LikeAction, current_user: dict = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_database)):
+    try:
+        obj_id = ObjectId(payload.item_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid item ID")
+
+    collection = None
+    if payload.item_type == "alumni": collection = db.alumni
+    elif payload.item_type == "job": collection = db.jobs
+    elif payload.item_type == "student": collection = db.students
+    else: raise HTTPException(status_code=400, detail="Invalid item type")
+
+    item = await collection.find_one({"_id": obj_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    # In a real rigorous schema, we would keep an array of 'liked_by' users.
+    # For now, we simulate an increment count for the minimal implementation.
+    current_likes = item.get("likes", 0)
+    
+    if payload.action == "like":
+        await collection.update_one({"_id": obj_id}, {"$set": {"likes": current_likes + 1}})
+    elif payload.action == "unlike":
+        await collection.update_one({"_id": obj_id}, {"$set": {"likes": max(0, current_likes - 1)}})
+
+    return {"status": "success", "message": f"{payload.action} recorded"}
+
+
+==================================================
+./backend/core/deps.py
+==================================================
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+import jwt
+from typing import Optional
+from database import get_db
+from models import UserRole
+from core.config import settings
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+    db = get_db()
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    user = await db.users.find_one({"email": email})
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    # Exclude hashed_password
+    user.pop("hashed_password", None)
+    return user
+
+async def get_database() -> AsyncIOMotorDatabase:
+    return get_db()
+
+
+==================================================
+./backend/core/config.py
+==================================================
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "CohortConnect API"
+    SECRET_KEY: str = "supersecret-cohort-connect"
+    MONGODB_URI: str = "mongodb+srv://jayeetrab:mGhnfdMwFeFZwx6L@cohortconnect.lcpylgn.mongodb.net/"
+    GOOGLE_API_KEY: str = ""
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200 # 30 days
+
+    class Config:
+        env_file = ".env"
+        extra = "ignore"
+
+settings = Settings()
+
+
+==================================================
+./backend/agents/matcher.py
+==================================================
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+# Load a fast, lightweight semantic model
+# This runs locally and generates semantic embeddings for our vectors.
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+def encode_vector(text_list: list[str]) -> np.ndarray:
+    """Encodes a list of strings into a single average semantic vector."""
+    if not text_list:
+        return np.zeros((384,)) # all-MiniLM-L6-v2 embedding dimension
+    # Create one continuous string describing the capabilities
+    combined_text = ", ".join(text_list)
+    return model.encode([combined_text])[0]
+
+def compute_similarity(source_vector: np.ndarray, target_vectors: list[np.ndarray]) -> list[float]:
+    """Computes cosine similarity between source and multiple targets."""
+    if not target_vectors:
+        return []
+    
+    # Cosine similarity expects 2D arrays
+    source_2d = source_vector.reshape(1, -1)
+    targets_2d = np.array(target_vectors)
+    
+    similarities = cosine_similarity(source_2d, targets_2d)[0]
+    return similarities.tolist()
+
+def calculate_match_scores(student_skills: list[str], targets: list[dict], target_key: str) -> list[dict]:
+    """
+    Given a list of student skills and a list of targets (jobs or alumni),
+    calculates the semantic similarity score for each target.
+    `target_key` is 'required_skills' for jobs, and 'expertise' for alumni.
+    """
+    if not student_skills or not targets:
+        return targets
+
+    student_vec = encode_vector(student_skills)
+    
+    # Extract target capability strings
+    target_skill_lists = [t.get(target_key, []) for t in targets]
+    target_vecs = [encode_vector(skl) for skl in target_skill_lists]
+    
+    scores = compute_similarity(student_vec, target_vecs)
+    
+    for idx, target in enumerate(targets):
+        # Cosine similarity ranges from -1 to 1. We'll map mostly 0.2->1.0 to a nice percentage.
+        # Ensure it scales to 100%. Max is 1.0.
+        raw_score = scores[idx]
+        
+        if raw_score <= 0.1: 
+            match_score = 0
+        else:
+            # Map [0.1, 1.0] to [0, 100] with a curve
+            match_score = min(100.0, max(0.0, (raw_score - 0.1) * (100 / 0.9)))
+            
+        target["matchScore"] = match_score
+        
+    return targets
+
+
+==================================================
+./backend/agents/cv_reader.py
+==================================================
+import pypdf
+import os
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from models import CVExtraction
+
+async def extract_cv_insights(file_path: str) -> dict:
+    try:
+        reader = pypdf.PdfReader(file_path)
+        text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+        
+        from core.config import settings
+        # If API key exists, do real LangChain extraction with Gemini
+        if settings.GOOGLE_API_KEY:
+            import os
+            os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY
+            llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1)
+            parser = PydanticOutputParser(pydantic_object=CVExtraction)
+            prompt = PromptTemplate(
+                template="You are the Univ of Bristol's AI Placement Officer. Parse the following CV and extract deep semantic skills, projects, and infer their strongest domain competency.\n{format_instructions}\nCV:\n{text}",
+                input_variables=["text"],
+                partial_variables={"format_instructions": parser.get_format_instructions()}
+            )
+            chain = prompt | llm | parser
+            result = await chain.ainvoke({"text": text})
+            parsed_data = result.model_dump()
+            parsed_data["raw_text"] = text
+            return parsed_data
+            
+        else:
+            # Fallback if no LLM key is configured in the `.env` yet
+            skills = ["Python", "Machine Learning"] if "python" in text.lower() else ["Operations", "Management"]
+            return {
+                "skills": skills + ["LangChain", "FastAPI", "MongoDB Vector Search", "React Vite"],
+                "projects": [
+                    "Built an AI placement officer connecting alumni and students",
+                    "Developed LangGraph semantic search engine deployed on AWS"
+                ],
+                "domain_competency": "Advanced Data AI & Fullstack Workflows",
+                "hireability_score": 94,
+                "improvement_feedback": [
+                    "Include more quantitative metrics on your recent projects to highlight impact."
+                ],
+                "raw_text": text
+            }
+            
+    except Exception as e:
+        return {"error": str(e)}
+
+
+==================================================
+./backend/agents/__init__.py
+==================================================
+
+
+==================================================
+./backend/agents/job_matcher.py
+==================================================
+import os
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import PromptTemplate
+
+async def semantic_multi_agent_search(query: str, db) -> dict:
+    # Retrieve all student profiles from MongoDB
+    students_cursor = db.students.find()
+    students = await students_cursor.to_list(length=50)
+    
+    if not students:
+        return {"status": "error", "message": "No students found in DB. Need someone to upload a CV first via the Student Portal."}
+        
+    structured_candidates = []
+    
+    # Live Semantic Matching via GenAI
+    if os.getenv("GOOGLE_API_KEY"):
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1)
+        prompt = PromptTemplate(
+            template="""You are an expert AI Placement Officer evaluating an employer query against candidate profiles.
+Employer Query: '{query}'
+Candidate Profile: {profile}
+
+Provide a match score (0-100) and a 1-sentence deep semantic reasoning of why they fit or don't fit. Return strictly in format: SCORE|REASON""",
+            input_variables=["query", "profile"]
+        )
+        
+        for student in students:
+            profile_summary = f"Skills: {student.get('skills', [])}. Competency: {student.get('domain_competency', '')}"
+            try:
+                res = await llm.ainvoke(prompt.format(query=query, profile=profile_summary))
+                score_str, reason = res.content.split("|", 1)
+                structured_candidates.append({
+                    "id": str(student["_id"]),
+                    "name": student["name"],
+                    "match": int(score_str.strip()),
+                    "topSkill": student.get("domain_competency", "Specialist"),
+                    "reason": reason.strip()
+                })
+            except:
+                continue
+    else:
+        # Fallback simulation utilizing the real DB records
+        for student in students:
+            structured_candidates.append({
+                "id": str(student["_id"]),
+                "name": student["name"],
+                "match": 95 if "AI" in query else 75,
+                "topSkill": student.get("domain_competency", "Specialist"),
+                "reason": "Demonstrates foundational skills aligning with your search intent based on their DB profile."
+            })
+            
+    # Sort by match descending
+    structured_candidates.sort(key=lambda x: x["match"], reverse=True)
+    return {"status": "success", "matches": structured_candidates[:5]}
+
+
+==================================================
+./cohort-connect-pitch/cohort_connect_uob_pitch.html
+==================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="slides-format" content="viewport" />
+  <title>Cohort Connect — University of Bristol Pitch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-bg: #18181B;
+      --color-bg-deep: #0F0F12;
+      --color-surface: #27272A;
+      --color-text: #FAFAFA;
+      --color-text-secondary: #E4E4E7;
+      --color-text-muted: #A1A1AA;
+      --color-accent-1: #F97316;
+      --color-accent-2: #14B8A6;
+      --color-accent-3: #FEF3C7;
+      --color-glass-bg: rgba(255,255,255,0.05);
+      --color-glass-border: rgba(255,255,255,0.08);
+      --color-vignette: rgba(0,0,0,0.42);
+      --font-display: 'Archivo Black', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+  </style>
+  <style>
+    :root { --color-bg: #18181B; --color-text: #FAFAFA; --glow-color-rgb: 249,115,22; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { background: var(--color-bg); margin: 0; }
+    body { font-family: var(--font-body); color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; }
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+    .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+    .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1180px; padding: clamp(1.5rem, 4vw, 4rem); }
+    .nav-controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; background: rgba(24,24,27,0.7); backdrop-filter: blur(10px); padding: 10px 24px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.08); }
+    .nav-btn { width: 40px; height: 40px; border: none; background: rgba(255,255,255,0.06); color: #F97316; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display:flex; align-items:center; justify-content:center; }
+    .slide-dots { display:flex; gap:8px; }
+    .slide-dots .dot { width:10px; height:10px; border-radius:50%; background: rgba(255,255,255,0.15); cursor:pointer; transition: all .3s; }
+    .slide-dots .dot.active { background:#F97316; transform:scale(1.25); }
+    .slide-counter { font-size:.8rem; color:#A1A1AA; min-width:40px; text-align:center; }
+    .reveal { opacity:0; transform:translateY(20px); }
+    .gradient-mesh { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+    .blob { position:absolute; border-radius:50%; filter: blur(80px); animation: float-slow 12s ease-in-out infinite; }
+    .blob:nth-child(2) { animation: float-drift 16s ease-in-out infinite; }
+    .blob:nth-child(3) { animation: float-slow 18s ease-in-out infinite reverse; }
+    @keyframes float-slow { 0% { transform: translate(0,0) scale(1);} 25% { transform: translate(50px,-40px) scale(1.08);} 50% { transform: translate(-40px,30px) scale(.92);} 75% { transform: translate(30px,20px) scale(1.05);} 100% { transform: translate(0,0) scale(1);} }
+    @keyframes float-drift { 0% { transform: translate(0,0) scale(1) rotate(0deg);} 33% { transform: translate(-50px,-60px) scale(1.12) rotate(3deg);} 66% { transform: translate(40px,25px) scale(.9) rotate(-2deg);} 100% { transform: translate(0,0) scale(1) rotate(0deg);} }
+    @keyframes float { 0%,100% { transform:translateY(0);} 50% { transform:translateY(-15px);} }
+    .slide::before { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); background-repeat:repeat; background-size:256px 256px; opacity:.03; mix-blend-mode:overlay; }
+    .slide::after { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.42) 100%); }
+    .text-glow { text-shadow: 0 0 20px rgba(249,115,22,.4), 0 0 40px rgba(249,115,22,.15); }
+    .stat-glow { text-shadow: 0 0 24px rgba(249,115,22,.45), 0 0 50px rgba(249,115,22,.2); }
+    .metric-card, .feature-card, .summary-card, .risk-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border:1px solid rgba(255,255,255,0.08); border-radius: 24px; }
+    .feature-card:hover, .metric-card:hover, .summary-card:hover, .risk-card:hover { transform: translateY(-4px); box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+    .bar-track { width:100%; height:24px; border-radius:999px; background: rgba(255,255,255,.08); overflow:hidden; }
+    .bar-fill { height:100%; border-radius:999px; background: linear-gradient(90deg, #F97316 0%, #14B8A6 100%); width:0%; }
+    .timeline-line { position:absolute; left:26px; top:0; bottom:0; width:2px; background: linear-gradient(180deg, #F97316, #14B8A6); opacity:.8; }
+    .timeline-dot { width:14px; height:14px; border-radius:50%; background:#F97316; box-shadow:0 0 18px rgba(249,115,22,.6); position:relative; z-index:2; margin-top:6px; }
+    .mouse-spotlight { position:fixed; inset:0; z-index:99; pointer-events:none; }
+    .uob-pill { border:1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06); border-radius:999px; padding:.45rem .9rem; font-size:.85rem; color:#E4E4E7; }
+    .logo-badge { display:inline-flex; align-items:center; justify-content:center; width:108px; height:108px; margin:0 auto 1.25rem; border-radius:28px; background: linear-gradient(135deg, rgba(249,115,22,.22), rgba(20,184,166,.16)); border:1px solid rgba(255,255,255,.12); box-shadow: 0 20px 60px rgba(0,0,0,.25); animation: float 3s ease-in-out infinite; }
+    .particle-canvas, .particle-canvas-ambient { position:absolute; inset:0; z-index:1; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .2s !important; } }
+  </style>
+</head>
+<body>
+<div class="mouse-spotlight"></div>
+<div class="deck">
+  <div class="slide slide-1 active" data-slide="1">
+    <div class="gradient-mesh">
+      <div class="blob" style="width: 520px; height: 520px; top: -120px; right: -100px; background: #F97316; opacity: .15;"></div>
+      <div class="blob" style="width: 340px; height: 340px; bottom: -70px; left: -40px; background: #14B8A6; opacity: .11;"></div>
+      <div class="blob" style="width: 240px; height: 240px; top: 42%; left: 18%; background: #FEF3C7; opacity: .08;"></div>
+    </div>
+    <canvas class="particle-canvas"></canvas>
+    <div class="content text-center">
+      <div class="logo-badge reveal">
+        <svg width="58" height="58" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Cohort Connect icon">
+          <circle cx="18" cy="20" r="8" fill="#F97316"/>
+          <circle cx="40" cy="18" r="7" fill="#14B8A6"/>
+          <circle cx="31" cy="39" r="9" fill="#FEF3C7"/>
+          <path d="M23 23L34 33M25 18H33M22 28L27 33M38 24L34 31" stroke="#FAFAFA" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="flex items-center justify-center gap-3 mb-5 flex-wrap reveal">
+        <span class="uob-pill">University of Bristol pitch</span>
+        <span class="uob-pill">AI employability platform</span>
+        <span class="uob-pill">Closed-loop talent marketplace</span>
+      </div>
+      <h1 class="font-display text-[clamp(2.5rem,6vw,5rem)] leading-[0.95] tracking-tight mb-4 bg-linear-to-r from-accent-1 via-accent-3 to-accent-2 bg-clip-text text-transparent reveal">COHORT CONNECT</h1>
+      <p class="text-[clamp(1rem,1.8vw,1.45rem)] text-text-secondary max-w-4xl mx-auto reveal">A placement intelligence platform that turns CVs, alumni networks, employer demand, and live cohort analytics into faster student outcomes.</p>
+      <p class="text-sm tracking-[6px] uppercase text-text-muted mt-5 reveal">Pitch deck for University of Bristol adoption</p>
+    </div>
+  </div>
+
+  <div class="slide slide-2" data-slide="2">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-80px;right:-60px;background:#F97316;opacity:.08"></div><div class="blob" style="width:260px;height:260px;bottom:-60px;left:-30px;background:#14B8A6;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">The problem</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">Placements are still managed like admin, not like a talent engine</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-1">Students miss warm access</h3>
+          <p class="text-text-secondary text-lg">Students depend on cold applications and fragmented job boards, while alumni who could help are hard to identify and activate at scale.</p>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-2">Employers search with weak signals</h3>
+          <p class="text-text-secondary text-lg">Keyword search misses strong candidates whose skills are described differently, creating false negatives and slower hiring.</p>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-3">Placement teams work manually</h3>
+          <p class="text-text-secondary text-lg">Career services still rely on email chains, static PDFs, and spreadsheet tracking, limiting visibility, speed, and scalability.</p>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="text-xl font-bold mb-3 text-accent-1">Universities lose live insight</h3>
+          <p class="text-text-secondary text-lg">Without closed-loop tracking, programmes cannot see what skills drive offers, which channels convert, or where curriculum gaps sit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-3" data-slide="3">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-90px;left:-60px;background:#14B8A6;opacity:.09"></div><div class="blob" style="width:280px;height:280px;bottom:-80px;right:-40px;background:#F97316;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">The answer</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">One platform connecting students, alumni, employers, and faculty</h2>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">📄</div><h3 class="font-bold text-xl mb-2">AI profile creation</h3><p class="text-text-secondary">Upload a CV once; the platform extracts skills, projects, experience, and builds a searchable profile automatically.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🧠</div><h3 class="font-bold text-xl mb-2">Semantic matching</h3><p class="text-text-secondary">Natural-language search maps employer needs to student capability, not just exact keywords on a PDF.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🤝</div><h3 class="font-bold text-xl mb-2">Alumni activation</h3><p class="text-text-secondary">The system identifies relevant alumni, drafts referral emails, and reduces the friction of giving back.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">📈</div><h3 class="font-bold text-xl mb-2">Live dashboards</h3><p class="text-text-secondary">Placement teams track searches, referrals, interviews, offers, and skill demand in real time.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🕶️</div><h3 class="font-bold text-xl mb-2">Blind hiring mode</h3><p class="text-text-secondary">Names, gender, and photos can be hidden so employers review skill alignment first.</p></div>
+        <div class="feature-card p-7 reveal"><div class="text-4xl mb-3">🧾</div><h3 class="font-bold text-xl mb-2">Auto-brochure output</h3><p class="text-text-secondary">Generate employer-ready cohort brochures and outreach assets without manual PowerPoint rebuilding.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-4" data-slide="4">
+    <div class="gradient-mesh"><div class="blob" style="width:420px;height:420px;top:-120px;right:-100px;background:#F97316;opacity:.09"></div><div class="blob" style="width:240px;height:240px;bottom:-40px;left:-20px;background:#FEF3C7;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Why this matters</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-10 reveal">Value for every stakeholder</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-8 border-l-4 border-accent-1 reveal"><h3 class="font-bold text-xl mb-3">Students</h3><p class="text-text-secondary text-lg">Receive fit-scored opportunities, CV feedback, alumni connections, and a clear hireability improvement path.</p></div>
+        <div class="summary-card p-8 border-l-4 border-accent-2 reveal"><h3 class="font-bold text-xl mb-3">Employers</h3><p class="text-text-secondary text-lg">Search the cohort in plain English, discover stronger matches, and send personalised outreach faster.</p></div>
+        <div class="summary-card p-8 border-l-4 border-accent-3 reveal"><h3 class="font-bold text-xl mb-3">Alumni</h3><p class="text-text-secondary text-lg">Act as connectors and mentors with drafted referrals, tracked impact, and lighter time commitment.</p></div>
+        <div class="summary-card p-8 border-l-4 border-accent-1 reveal"><h3 class="font-bold text-xl mb-3">University of Bristol</h3><p class="text-text-secondary text-lg">Build a branded, measurable employability infrastructure that can scale across programmes and become a model for UK higher education.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-5" data-slide="5">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-100px;left:-50px;background:#14B8A6;opacity:.08"></div><div class="blob" style="width:280px;height:280px;bottom:-90px;right:-50px;background:#F97316;opacity:.08"></div></div>
+    <canvas class="particle-canvas-ambient"></canvas>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">User journey</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">How the closed loop works</h2>
+      <div class="relative pl-0">
+        <div class="timeline-line"></div>
+        <div class="grid gap-5">
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">1. Student uploads CV</h3><p class="text-text-secondary">The profile agent extracts skills, projects, experience, and embeddings for semantic understanding.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">2. Employer searches naturally</h3><p class="text-text-secondary">A recruiter describes the ideal candidate in plain language rather than forcing keyword filters.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">3. Platform ranks best matches</h3><p class="text-text-secondary">Candidates are scored by semantic fit, with reasons, strengths, and gaps surfaced instantly.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">4. Alumni referrals are drafted</h3><p class="text-text-secondary">If a relevant alumnus exists, the platform generates a warm referral email for approval in seconds.</p></div></div>
+          <div class="flex gap-5 reveal"><div class="timeline-dot"></div><div class="summary-card p-5 w-full"><h3 class="font-bold text-lg mb-1">5. University learns from outcomes</h3><p class="text-text-secondary">Searches, interviews, offers, and channel performance feed dashboards and future curriculum insight.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-6" data-slide="6">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-70px;right:-60px;background:#FEF3C7;opacity:.08"></div><div class="blob" style="width:300px;height:300px;bottom:-60px;left:-40px;background:#14B8A6;opacity:.08"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">What makes it different</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">Cohort Connect vs current alternatives</h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-8 reveal">
+          <h3 class="font-bold text-xl mb-4 text-accent-1">Typical systems</h3>
+          <ul class="space-y-4 text-lg text-text-secondary">
+            <li>Keyword-only search misses nuance.</li>
+            <li>Manual referral writing creates friction.</li>
+            <li>Static cohort brochures go out of date fast.</li>
+            <li>Limited visibility into interview and offer conversion.</li>
+            <li>Students, alumni, and employers operate in silos.</li>
+          </ul>
+        </div>
+        <div class="summary-card p-8 reveal">
+          <h3 class="font-bold text-xl mb-4 text-accent-2">Cohort Connect</h3>
+          <ul class="space-y-4 text-lg text-text-secondary">
+            <li>Semantic job-to-student matching with explainable fit.</li>
+            <li>Agentic drafting for referrals and outreach.</li>
+            <li>Live cohort brochures and dashboards.</li>
+            <li>Closed-loop lifecycle tracking from CV upload to offer.</li>
+            <li>Built specifically for university employability workflows.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-7" data-slide="7">
+    <div class="gradient-mesh"><div class="blob" style="width:430px;height:430px;top:-120px;right:-100px;background:#F97316;opacity:.1"></div><div class="blob" style="width:260px;height:260px;bottom:-50px;left:-30px;background:#14B8A6;opacity:.07"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Pilot metrics</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">The MVP is designed around measurable wins</h2>
+      <div class="grid grid-cols-4 gap-5 mb-8">
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">45</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Students onboarded</div><div class="text-text-secondary">Initial target for the MSc pilot cohort</div></div>
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">5</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Employers engaged</div><div class="text-text-secondary">Early proof of semantic hiring demand</div></div>
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">50%</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Referral interview rate</div><div class="text-text-secondary">Phase 2 success target for alumni referrals</div></div>
+        <div class="metric-card p-6 text-center reveal"><div class="text-4xl mb-2">80%</div><div class="text-sm uppercase tracking-[3px] text-text-muted mb-2">Placement ambition</div><div class="text-text-secondary">Phase 3 target once workflow matures</div></div>
+      </div>
+      <div class="summary-card p-7 reveal">
+        <h3 class="font-bold text-xl mb-5">Illustrative outcomes dashboard</h3>
+        <div class="grid gap-4">
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Semantic search</div><div class="bar-track"><div class="bar-fill" data-width="78"></div></div><div class="text-right text-accent-1 font-bold">78</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Employer fit score</div><div class="bar-track"><div class="bar-fill" data-width="94"></div></div><div class="text-right text-accent-1 font-bold">94</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Profile completeness</div><div class="bar-track"><div class="bar-fill" data-width="95"></div></div><div class="text-right text-accent-1 font-bold">95</div></div>
+          <div class="grid grid-cols-[160px_1fr_70px] items-center gap-4"><div class="text-text-secondary">Referral conversion</div><div class="bar-track"><div class="bar-fill" data-width="50"></div></div><div class="text-right text-accent-1 font-bold">50</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-8" data-slide="8">
+    <div class="gradient-mesh"><div class="blob" style="width:380px;height:380px;top:-90px;left:-70px;background:#14B8A6;opacity:.08"></div><div class="blob" style="width:290px;height:290px;bottom:-70px;right:-50px;background:#FEF3C7;opacity:.08"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Architecture</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.15rem)] mb-8 reveal">Built on a practical, modern AI stack</h2>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Frontend</h3><p class="text-text-secondary">Student, alumni, employer, and admin portals in React or Vue with responsive dashboards and upload flows.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Application layer</h3><p class="text-text-secondary">FastAPI powers CV upload, profile management, job matching, referral workflows, analytics, and authentication.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Agentic AI</h3><p class="text-text-secondary">LangChain and LangGraph orchestrate CV parsing, matching, referral drafting, and outcome analytics agents.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">LLM layer</h3><p class="text-text-secondary">Gemini or GPT-class models support structured extraction, match explanations, and outreach generation.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Data layer</h3><p class="text-text-secondary">PostgreSQL with pgvector stores relational data and embeddings in one university-manageable stack.</p></div>
+        <div class="feature-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Governance</h3><p class="text-text-secondary">Supports OAuth/JWT, consent-led data use, blind hiring, audit logs, and GDPR-aligned operation.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-9" data-slide="9">
+    <div class="gradient-mesh"><div class="blob" style="width:420px;height:420px;top:-120px;right:-100px;background:#F97316;opacity:.09"></div><div class="blob" style="width:260px;height:260px;bottom:-60px;left:-30px;background:#14B8A6;opacity:.09"></div></div>
+    <canvas class="particle-canvas-ambient"></canvas>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Rollout</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.2rem)] mb-8 reveal">A realistic path from pilot to university-wide model</h2>
+      <div class="grid grid-cols-4 gap-5">
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-1 mb-3">Phase 1</div><h3 class="font-bold text-lg mb-2">Months 1–2</h3><p class="text-text-secondary">MVP with CV upload, semantic search, job matching, and a basic admin dashboard for one Bristol cohort.</p></div>
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-2 mb-3">Phase 2</div><h3 class="font-bold text-lg mb-2">Months 3–4</h3><p class="text-text-secondary">Add alumni portal, referral automation, hireability score, and deeper analytics on conversions.</p></div>
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-3 mb-3">Phase 3</div><h3 class="font-bold text-lg mb-2">Months 5–6</h3><p class="text-text-secondary">Introduce blind hiring, cohort brochure generation, richer reporting, and scaling for broader programme adoption.</p></div>
+        <div class="summary-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-accent-1 mb-3">Phase 4</div><h3 class="font-bold text-lg mb-2">Months 7–12</h3><p class="text-text-secondary">Expand to multi-tenant architecture, white-label university branding, and a repeatable market model.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-10" data-slide="10">
+    <div class="gradient-mesh"><div class="blob" style="width:350px;height:350px;top:-80px;left:-60px;background:#FEF3C7;opacity:.08"></div><div class="blob" style="width:310px;height:310px;bottom:-70px;right:-50px;background:#F97316;opacity:.08"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Business case</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">High strategic upside with manageable pilot cost</h2>
+      <div class="grid grid-cols-3 gap-6 mb-8">
+        <div class="metric-card p-7 text-center reveal"><div class="text-5xl stat-glow font-display">£15k–£20k</div><div class="mt-3 uppercase tracking-[4px] text-text-muted">Estimated pilot budget</div></div>
+        <div class="metric-card p-7 text-center reveal"><div class="text-5xl stat-glow font-display">2–3</div><div class="mt-3 uppercase tracking-[4px] text-text-muted">Developers for MVP</div></div>
+        <div class="metric-card p-7 text-center reveal"><div class="text-5xl stat-glow font-display">60 sec</div><div class="mt-3 uppercase tracking-[4px] text-text-muted">Target brochure generation time</div></div>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="summary-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Why Bristol should care</h3><p class="text-text-secondary text-lg">This is a visible employability differentiator, a stronger employer relationship tool, and a data source for programme quality improvement.</p></div>
+        <div class="summary-card p-7 reveal"><h3 class="font-bold text-xl mb-3">Why now</h3><p class="text-text-secondary text-lg">Agentic AI frameworks and vector-based semantic matching are mature enough to deliver a credible first-mover advantage in UK higher education.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-11" data-slide="11">
+    <div class="gradient-mesh"><div class="blob" style="width:360px;height:360px;top:-80px;right:-60px;background:#14B8A6;opacity:.08"></div><div class="blob" style="width:280px;height:280px;bottom:-60px;left:-40px;background:#F97316;opacity:.09"></div></div>
+    <div class="content">
+      <p class="uppercase tracking-[5px] text-text-muted mb-4 reveal">Risk and trust</p>
+      <h2 class="font-display text-[clamp(2rem,4vw,3.1rem)] mb-8 reveal">Governance is part of the product, not an afterthought</h2>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="risk-card p-7 border-l-4 border-accent-1 reveal"><h3 class="font-bold text-xl mb-3">Data privacy</h3><p class="text-text-secondary">Use UK-hosted storage, explicit consent, delete rights, and controlled profile visibility for students.</p></div>
+        <div class="risk-card p-7 border-l-4 border-accent-2 reveal"><h3 class="font-bold text-xl mb-3">Fairness</h3><p class="text-text-secondary">Audit match outcomes, recommend blind hiring by default, and monitor downranking patterns over time.</p></div>
+        <div class="risk-card p-7 border-l-4 border-accent-3 reveal"><h3 class="font-bold text-xl mb-3">Quality assurance</h3><p class="text-text-secondary">Validate CV parsing, compare semantic ranking to expert judgment, and run user feedback cycles before scale-up.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide-12" data-slide="12">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:520px;height:520px;top:-120px;right:-100px;background:#F97316;opacity:.15"></div>
+      <div class="blob" style="width:340px;height:340px;bottom:-80px;left:-40px;background:#14B8A6;opacity:.12"></div>
+      <div class="blob" style="width:220px;height:220px;top:35%;left:20%;background:#FEF3C7;opacity:.09"></div>
+    </div>
+    <canvas class="particle-canvas"></canvas>
+    <div class="content text-center">
+      <div class="text-[96px] mb-4 reveal">🚀</div>
+      <h2 class="font-display text-[clamp(2.5rem,5vw,4.5rem)] bg-linear-to-r from-accent-1 via-accent-3 to-accent-2 bg-clip-text text-transparent mb-4 reveal">Ask</h2>
+      <p class="text-[clamp(1.1rem,2vw,1.6rem)] text-text-secondary max-w-4xl mx-auto mb-6 reveal">Approve a pilot with one Bristol cohort, align careers and faculty sponsors, and use Cohort Connect to turn employability into a measurable university capability.</p>
+      <div class="grid grid-cols-3 gap-5 max-w-5xl mx-auto">
+        <div class="metric-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-text-muted mb-2">Immediate next step</div><div class="font-bold text-lg">Pilot approval</div></div>
+        <div class="metric-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-text-muted mb-2">Operational step</div><div class="font-bold text-lg">Nominate programme and careers leads</div></div>
+        <div class="metric-card p-6 reveal"><div class="text-sm uppercase tracking-[4px] text-text-muted mb-2">Strategic step</div><div class="font-bold text-lg">Position Bristol as a UK-first model</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-controls">
+  <button class="nav-btn" aria-label="Previous slide" onclick="changeSlide(-1)">&#8249;</button>
+  <div class="slide-dots" id="dots"></div>
+  <button class="nav-btn" aria-label="Next slide" onclick="changeSlide(1)">&#8250;</button>
+  <span class="slide-counter" id="counter">1 / 12</span>
+</div>
+
+<script>
+let current = 1;
+const total = document.querySelectorAll('.slide').length;
+const dotsContainer = document.getElementById('dots');
+const counter = document.getElementById('counter');
+for (let i = 1; i <= total; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i === 1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+function goToSlide(n) {
+  const prev = document.querySelector('.slide.active');
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (prev) prev.classList.remove('active');
+  if (next) { next.classList.add('active'); animateSlide(next); }
+  current = n; updateNav();
+}
+function changeSlide(dir) { let next = current + dir; if (next < 1) next = total; if (next > total) next = 1; goToSlide(next); }
+function updateNav() { document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current)); counter.textContent = current + ' / ' + total; }
+document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); } });
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
+function animateSlide(slide) {
+  slide.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.offsetHeight;
+    const delay = i * 0.08;
+    el.style.transition = `opacity 0.35s ease ${delay}s, transform 0.35s ease ${delay}s`;
+    el.style.opacity = '1'; el.style.transform = 'translateY(0px)';
+  });
+  slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => {
+    bar.classList.add('fill-init'); bar.style.width = '0%'; bar.style.transition = `width 0.5s ease ${i * 0.08}s`; bar.offsetHeight; bar.style.width = bar.dataset.width + '%';
+  });
+}
+document.addEventListener('mousemove', (e) => {
+  const spotlight = document.querySelector('.mouse-spotlight');
+  spotlight.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(249,115,22,0.06), transparent 40%)`;
+});
+window.initParticles = function(canvas, options) {
+  if (!canvas) return; const ctx = canvas.getContext('2d'); canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+  const interactive = options.interactive !== false; const count = options.count || (interactive ? 55 : 18); let mx = -1000, my = -1000;
+  const particles = Array.from({ length: count }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, size: Math.random() * 2.5 + 0.8, alpha: Math.random() * 0.35 + 0.1 }));
+  if (interactive) { canvas.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; }); canvas.addEventListener('mouseleave', () => { mx = -1000; my = -1000; }); }
+  (function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p => {
+      if (interactive) { const dx = p.x - mx, dy = p.y - my, dist = Math.sqrt(dx*dx + dy*dy) || 1; if (dist < 120) { const force = (120 - dist) / 120 * 2; p.vx += (dx / dist) * force * 0.1; p.vy += (dy / dist) * force * 0.1; } }
+      p.vx *= 0.98; p.vy *= 0.98; p.x += p.vx; p.y += p.vy; if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0; if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = `rgba(249,115,22,${p.alpha})`; ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  })();
+};
+document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, { interactive: true, count: 55 }));
+document.querySelectorAll('.particle-canvas-ambient').forEach(c => window.initParticles(c, { interactive: false, count: 18 }));
+try { animateSlide(document.querySelector('.slide.active')); } catch(e) {}
+</script>
+</body>
+</html>
+
