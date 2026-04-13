@@ -62,10 +62,10 @@ export default function ProfilePage() {
   };
 
   const roleColors = {
-    student:  'from-blue-500/20 to-sky-400/20',
-    alumni:   'from-purple-500/20 to-pink-400/20',
+    student: 'from-blue-500/20 to-sky-400/20',
+    alumni: 'from-purple-500/20 to-pink-400/20',
     employer: 'from-amber-500/20 to-orange-400/20',
-    admin:    'from-rose-500/20 to-red-400/20',
+    admin: 'from-rose-500/20 to-red-400/20',
   };
   const gradient = roleColors[user?.role] || 'from-emerald-500/20 to-teal-400/20';
 
@@ -150,11 +150,10 @@ export default function ProfilePage() {
           </div>
 
           {saveMsg && (
-            <div className={`px-4 py-2.5 rounded-xl text-sm font-semibold mb-4 ${
-              saveMsg.includes('failed') || saveMsg.includes('Error')
+            <div className={`px-4 py-2.5 rounded-xl text-sm font-semibold mb-4 ${saveMsg.includes('failed') || saveMsg.includes('Error')
                 ? 'bg-red-500/10 border border-red-500/20 text-red-400'
                 : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-            }`}>
+              }`}>
               {saveMsg}
             </div>
           )}
@@ -276,7 +275,7 @@ export default function ProfilePage() {
         <h2 className="text-[var(--foreground)] font-black flex items-center gap-2">
           <Mail size={16} className="text-[var(--primary-500)]" /> Account
         </h2>
-                {[
+        {[
           { label: 'Email', value: user?.email },
           { label: 'Role', value: user?.role, capitalize: true },
           { label: 'Hireability Score', value: profile?.hireability_score !== undefined ? `${profile.hireability_score}/100` : '—' },
@@ -289,7 +288,8 @@ export default function ProfilePage() {
             </span>
           </div>
         ))}
-       {/* Logout Section */}
+      </motion.div>
+      {/* Logout Section */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
