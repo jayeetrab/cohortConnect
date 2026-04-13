@@ -139,11 +139,10 @@ export default function AlumniDirectory() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                tab === t.id
+              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t.id
                   ? 'bg-[#F97316] text-white shadow-lg shadow-[#F97316]/20'
                   : 'text-[var(--primary-500)] hover:text-[var(--foreground)]'
-              }`}
+                }`}
             >
               {t.label}
             </button>
@@ -209,11 +208,10 @@ export default function AlumniDirectory() {
                   </div>
                 </div>
               ) : (
-                <div className={`px-4 py-3 rounded-xl border text-sm font-semibold ${
-                  ref.status === 'approved'
+                <div className={`px-4 py-3 rounded-xl border text-sm font-semibold ${ref.status === 'approved'
                     ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                     : 'bg-red-500/10 border-red-500/20 text-red-400'
-                }`}>
+                  }`}>
                   {ref.status === 'approved' ? '✓ You approved this referral.' : '✗ You declined this referral.'}
                 </div>
               )}
