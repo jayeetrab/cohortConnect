@@ -189,10 +189,13 @@ async def analyze_job_match(
     db = get_db()
     try:
         job = await db.jobs.find_one({"_id": ObjectId(job_id)})
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid job ID.")
+    except Exception as e:
+        print(f"DEBUG: Invalid job_id format: {job_id}")
+        raise HTTPException(status_code=400, detail=f"Invalid job ID format: {job_id}")
+    
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found.")
+        print(f"DEBUG: Job not found in DB: {job_id}")
+        raise HTTPException(status_code=404, detail=f"Job record ({job_id}) was not found in our matching engine.")
     job["_id"] = str(job["_id"])
 
     student = await db.students.find_one({"email": current_user["email"]})

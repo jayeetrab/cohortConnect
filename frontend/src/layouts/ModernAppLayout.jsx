@@ -122,16 +122,9 @@ export default function ModernAppLayout({ children, userType = 'student' }) {
 
       {/* Main content */}
       <main className="flex-1 md:ml-64 pb-20 md:pb-0 relative min-h-screen">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="p-4 md:p-8 max-w-5xl mx-auto text-[var(--foreground)]"
-        >
+        <div className="p-4 md:p-8 max-w-5xl mx-auto text-[var(--foreground)]">
           {children}
-        </motion.div>
+        </div>
       </main>
 
       {/* Mobile bottom nav */}

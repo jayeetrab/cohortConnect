@@ -58,8 +58,8 @@ export default function JobDetailModal({ jobId, onClose }) {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="w-12 h-12 border-4 border-[var(--border)] border-t-emerald-500 rounded-full animate-spin" />
-            <p className="text-sm font-bold text-[var(--primary-500)] animate-pulse">Running AI Career Analysis...</p>
+            <div className="w-12 h-12 border-4 border-[var(--border)] border-t-emerald-500 rounded-full" />
+            <p className="text-sm font-bold text-[var(--primary-500)]">Running AI Career Analysis...</p>
           </div>
         ) : error ? (
           <div className="py-20 text-center space-y-4">

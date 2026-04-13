@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
-import { User, Mail, Briefcase, Shield, Edit3, Check, X, Star } from 'lucide-react';
+import { User, Mail, Briefcase, Shield, Edit3, Check, X, Star, LogOut } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, logoutUser } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -287,6 +289,23 @@ export default function ProfilePage() {
             </span>
           </div>
         ))}
+       {/* Logout Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-panel border border-red-500/20 rounded-2xl p-6 bg-red-500/5 flex flex-col items-center gap-4 text-center mt-6"
+      >
+        <div className="space-y-1">
+          <p className="font-bold text-[var(--foreground)]">Platform Session</p>
+          <p className="text-[var(--primary-500)] text-xs">Sign out to end your secure career placement session.</p>
+        </div>
+        <button
+          onClick={() => { logoutUser(); navigate('/auth'); }}
+          className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-all shadow-lg shadow-red-500/20 active:scale-95"
+        >
+          <LogOut size={18} /> Log Out of Cohort Connect
+        </button>
       </motion.div>
     </div>
   );

@@ -41,14 +41,13 @@ async def draft_referral(
 
     db = get_db()
 
-    # Fetch student
-    try:
-        student = await db.students.find_one({"_id": ObjectId(payload.student_id)})
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid student ID.")
+    # Fetch student by email (more reliable across collections)
+    student = await db.students.find_one({"email": current_user["email"]})
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found.")
-    student["_id"] = str(student["_id"])
+        raise HTTPException(status_code=404, detail="Student profile not found. Please upload your CV first.")
+    
+    student_id_str = str(student["_id"])
+    student["_id"] = student_id_str
 
     # Fetch job
     try:

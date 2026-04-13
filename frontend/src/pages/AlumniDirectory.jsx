@@ -297,10 +297,16 @@ export default function AlumniDirectory() {
               className="w-full max-w-md glass-panel border border-[var(--border)] rounded-[2rem] p-8 shadow-2xl space-y-6"
             >
               <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-[var(--foreground)] font-black text-xl">Request Referral</h2>
-                  <p className="text-[var(--primary-500)] text-sm">To: {selectedAlumni.name}</p>
-                </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-black text-[var(--foreground)] tracking-tight">
+                      Request Referral
+                    </h2>
+                    <p className="text-sm text-[var(--primary-500)] flex items-center gap-2">
+                      To: <span className="font-bold text-[var(--foreground)]">{selectedAlumni.name}</span> 
+                      <span className="w-1 h-1 rounded-full bg-[var(--border)]" />
+                      <span className="text-orange-500 font-bold">{selectedAlumni.company}</span>
+                    </p>
+                  </div>
                 <button onClick={() => setSelectedAlumni(null)} className="p-2 rounded-xl hover:bg-white/5 text-[var(--primary-500)]">
                   <X size={20} />
                 </button>
@@ -321,11 +327,16 @@ export default function AlumniDirectory() {
                       onChange={(e) => setSelectedJobId(e.target.value)}
                       className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[#F97316]/50 transition-colors"
                     >
-                      <option value="">Select a job from {selectedAlumni.company}…</option>
+                      <option value="">Select a job at {selectedAlumni.company}…</option>
                       {jobs.filter(j => j.company === selectedAlumni.company).map((j) => (
                         <option key={j._id} value={j._id}>{j.title}</option>
                       ))}
                     </select>
+                    {jobs.filter(j => j.company === selectedAlumni.company).length === 0 && (
+                      <p className="mt-2 text-[10px] text-amber-500 font-bold flex items-center gap-1">
+                        <AlertCircle size={10} /> No active roles found for {selectedAlumni.company} in our database.
+                      </p>
+                    )}
                   </div>
 
                   <p className="text-[var(--primary-500)] text-xs leading-relaxed italic">
