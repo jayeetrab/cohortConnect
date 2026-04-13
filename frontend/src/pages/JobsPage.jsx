@@ -1,85 +1,149 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Building, MapPin, Search, PlusCircle, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Briefcase, MapPin, Search, Bell, BellOff } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function JobsPage() {
+  const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [alerts, setAlerts] = useState(new Set());
-  const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/api/jobs')
-       .then(res => setJobs(res.data.data || []))
-       .catch(err => console.error(err))
-       .finally(() => setLoading(false));
+      .then((res) => setJobs(res.data.data || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const toggleAlert = (id) => {
-    const newAlerts = new Set(alerts);
-    if(newAlerts.has(id)) newAlerts.delete(id);
-    else newAlerts.add(id);
-    setAlerts(newAlerts);
+    setAlerts((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   };
 
+  const filtered = jobs.filter((j) =>
+    `${j.title} ${j.company} ${j.location} ${(j.required_skills || []).join(' ')}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-10 h-10 border-4 border-[var(--border)] border-t-[#F97316] rounded-full animate-spin" />
+    </div>
+  );
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 max-w-full text-[var(--foreground)]">
-      <div className="space-y-4">
-        <div className="glass-panel border border-[var(--border)] shadow-sm p-5 rounded-xl">
-           <h3 className="font-bold mb-2 flex items-center gap-2"><Briefcase size={16}/> Job Picks for You</h3>
-           <p className="text-xs text-[var(--primary-500)] mb-4">Based on your semantic vector profile.</p>
-           <button onClick={() => navigate('/settings')} className="bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity text-sm font-bold py-2 w-full rounded-lg shadow-sm">Update Preferences</button>
-        </div>
-        <div className="glass-panel border border-[var(--border)] shadow-sm p-5 rounded-xl">
-           <h3 className="font-bold mb-3 text-sm flex items-center gap-2"><Building size={16}/> Company Portals</h3>
-           <div className="text-sm font-semibold text-[var(--primary-600)] cursor-pointer hover:text-[var(--foreground)] transition-colors mb-2">Tata Consultancy Services</div>
-           <div className="text-sm font-semibold text-[var(--primary-600)] cursor-pointer hover:text-[var(--foreground)] transition-colors">IBM Research</div>
-        </div>
+    <div className="space-y-8 pb-10">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <p className="text-xs uppercase tracking-widest text-[var(--primary-500)] mb-1">Job Board</p>
+        <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight">Live Opportunities</h1>
+        <p className="text-[var(--primary-500)] text-sm mt-1">{jobs.length} roles available · Updated daily</p>
+            </motion.div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" />
+        <input
+          type="text"
+          placeholder="Search by title, company, skill, location…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] outline-none focus:border-[#F97316]/50 transition-colors"
+        />
       </div>
 
-      <div className="glass-panel border border-[var(--border)] shadow-sm overflow-hidden min-h-[60vh] rounded-xl flex flex-col">
-         <div className="bg-black/5 dark:bg-white/5 px-6 py-5 border-b border-[var(--border)] flex flex-col md:flex-row justify-between items-center gap-4">
-             <h2 className="text-xl font-bold">Recommended Jobs</h2>
-             <div className="flex bg-[var(--background)] border border-[var(--border)] rounded-xl items-center px-4 py-2 focus-within:border-[var(--foreground)] transition-colors max-w-sm w-full shadow-inner">
-                <Search size={18} className="text-[var(--primary-500)] mr-3"/>
-                <input type="text" placeholder="Search title or company" className="bg-transparent border-none outline-none text-sm w-full text-[var(--foreground)] placeholder-[var(--primary-500)] font-medium"/>
-             </div>
-         </div>
-         
-         <div className="divide-y divide-[var(--border)] flex-1">
-              {loading ? (
-                 <div className="p-12 text-center text-[var(--primary-500)] font-semibold">Loading Live Job Board...</div>
-              ) : jobs.length > 0 ? (
-                 jobs.map((job, idx) => (
-                    <div key={job._id || idx} className="p-6 hover:bg-black/5 dark:hover:bg-white/5 transition-colors grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-5 items-start group">
-                         <div className="w-16 h-16 bg-[var(--background)] rounded-2xl flex items-center justify-center border border-[var(--border)] flex-shrink-0 shadow-sm">
-                             <Building size={24} className="text-[var(--primary-500)]"/>
-                         </div>
-                         <div>
-                             <h3 className="font-bold text-[var(--foreground)] group-hover:text-[var(--primary-500)] cursor-pointer transition-colors text-lg leading-tight mb-1">{job.title}</h3>
-                             <p className="text-sm text-[var(--primary-600)] font-semibold">{job.company}</p>
-                             <p className="text-xs text-[var(--primary-500)] flex items-center gap-1 mt-2 mb-4"><MapPin size={14}/> {job.location} • Actively Recruiting</p>
-                             <p className="text-sm text-[var(--primary-600)] leading-relaxed max-w-3xl mb-4">{job.description}</p>
-                             <div className="flex gap-2 flex-wrap">
-                                 {job.required_skills?.slice(0,4).map((sk, idxs) => (
-                                      <span key={idxs} className="bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--primary-600)] text-xs font-semibold px-3 py-1 rounded-lg">{sk}</span>
-                                 ))}
-                             </div>
-                         </div>
-                         <button 
-                           onClick={() => toggleAlert(job._id || idx)}
-                           className={`hidden md:flex border font-semibold px-5 py-2.5 rounded-xl transition-all items-center gap-2 text-sm whitespace-nowrap shadow-sm ${alerts.has(job._id || idx) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-black/5 dark:bg-white/5 text-[var(--foreground)] border-[var(--border)] hover:bg-black/10 dark:hover:bg-white/10'}`}
-                         >
-                             {alerts.has(job._id || idx) ? <><CheckCircle size={16}/> Alert Active</> : <><PlusCircle size={16}/> Setup Alert</>}
-                         </button>
-                    </div>
-                 ))
-              ) : (
-                 <div className="p-12 text-center text-[var(--primary-500)] font-medium">No active job listings deployed.</div>
-              )}
-         </div>
+      {/* Results count */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[var(--primary-500)]">
+          Showing <span className="font-bold text-[var(--foreground)]">{filtered.length}</span> roles
+        </p>
       </div>
+
+      {/* Job cards */}
+      {filtered.length === 0 ? (
+        <div className="glass-panel border border-[var(--border)] rounded-2xl p-12 text-center text-[var(--primary-500)]">
+          No jobs match your search.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((job, idx) => (
+            <motion.div
+              key={job._id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04 }}
+              className="glass-panel border border-[var(--border)] hover:border-[var(--primary-500)]/30 rounded-2xl p-6 transition-all duration-300 group"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex gap-4 items-start">
+                  <div className="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center shrink-0">
+                    <Briefcase size={20} className="text-[var(--primary-500)]" />
+                  </div>
+                  <div>
+                    <h3 className="text-[var(--foreground)] font-bold group-hover:text-[#F97316] transition-colors">
+                      {job.title}
+                    </h3>
+                    <p className="text-[var(--primary-500)] text-sm font-medium">{job.company}</p>
+                    <div className="flex items-center gap-1 mt-0.5 text-[var(--primary-500)] text-xs">
+                      <MapPin size={11} /> {job.location}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => toggleAlert(job._id)}
+                  className={`p-2.5 rounded-xl border transition-all shrink-0 ${
+                    alerts.has(job._id)
+                      ? 'bg-[#F97316]/10 border-[#F97316]/30 text-[#F97316]'
+                      : 'border-[var(--border)] text-[var(--primary-500)] hover:text-[var(--foreground)] hover:border-[var(--primary-500)]/40'
+                  }`}
+                  title={alerts.has(job._id) ? 'Remove alert' : 'Set alert'}
+                >
+                  {alerts.has(job._id) ? <Bell size={15} /> : <BellOff size={15} />}
+                </button>
+              </div>
+
+              <p className="text-[var(--primary-500)] text-sm mt-4 leading-relaxed">{job.description}</p>
+
+              <div className="flex flex-wrap gap-2 mt-4">
+                {(job.required_skills || []).map((s) => (
+                  <span
+                    key={s}
+                    className="px-2.5 py-0.5 rounded-full text-xs border bg-white/5 text-[var(--primary-500)] border-[var(--border)] font-medium"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+
+              {job.matchScore !== undefined && (
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="h-1.5 flex-1 bg-black/10 dark:bg-white/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${job.matchScore}%` }}
+                      transition={{ duration: 0.8 }}
+                      className="h-full rounded-full bg-gradient-to-r from-[#F97316] to-[#14B8A6]"
+                    />
+                  </div>
+                  <span className={`text-xs font-bold shrink-0 ${
+                    job.matchScore >= 80 ? 'text-emerald-400' :
+                    job.matchScore >= 60 ? 'text-[#F97316]' : 'text-[var(--primary-500)]'
+                  }`}>
+                    {job.matchScore}% match
+                  </span>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,69 +1,179 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Filter, BookOpen, UserPlus, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, Search, Briefcase } from 'lucide-react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function NetworkPage() {
+  const { user } = useAuth();
+  const [students, setStudents] = useState([]);
   const [alumni, setAlumni] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [connectedIds, setConnectedIds] = useState(new Set());
+  const [search, setSearch] = useState('');
+  const [tab, setTab] = useState('alumni');
 
   useEffect(() => {
-    api.get('/api/alumni')
-       .then(res => setAlumni(res.data.data || []))
-       .catch(err => console.error(err))
-       .finally(() => setLoading(false));
-  }, []);
+    const fetchAll = async () => {
+      setLoading(true);
+      try {
+        const alumniRes = await api.get('/api/alumni');
+        setAlumni(alumniRes.data.data || []);
+        if (user?.role === 'employer' || user?.role === 'admin') {
+          const studentsRes = await api.get('/api/students');
+          setStudents(studentsRes.data.data || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, [user]);
 
-  const handleConnect = (e, id) => {
-    e.stopPropagation();
-    const newSet = new Set(connectedIds);
-    newSet.add(id);
-    setConnectedIds(newSet);
-  };
+  const filteredAlumni = alumni.filter((a) =>
+    `${a.name} ${a.company} ${a.role} ${(a.expertise || []).join(' ')}`
+      .toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredStudents = students.filter((s) =>
+    `${s.name} ${s.email} ${s.domain_competency} ${(s.skills || []).join(' ')}`
+      .toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-10 h-10 border-4 border-[var(--border)] border-t-[#F97316] rounded-full animate-spin" />
+    </div>
+  );
+
+  const tabs = [
+    { id: 'alumni', label: `🤝 Alumni (${alumni.length})` },
+    ...(user?.role === 'employer' || user?.role === 'admin'
+      ? [{ id: 'students', label: `🎓 Students (${students.length})` }]
+      : []),
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-6 max-w-full text-[var(--foreground)]">
-      <div className="space-y-4">
-        <div className="glass-panel border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
-           <div className="px-4 py-3 border-b border-[var(--border)] flex items-center gap-2 font-bold text-[var(--foreground)]"><Users size={18}/> Manage Network</div>
-           <div className="px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer flex justify-between text-sm text-[var(--primary-600)] transition-colors">Connections <span>142</span></div>
-           <div className="px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer flex justify-between text-sm text-[var(--primary-600)] transition-colors">Following <span>53</span></div>
-           <div className="px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer flex justify-between text-sm text-[var(--primary-600)] transition-colors">Groups <span>8</span></div>
-        </div>
+    <div className="space-y-8 pb-10">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <p className="text-xs uppercase tracking-widest text-[var(--primary-500)] mb-1">Network</p>
+        <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight">Bristol Talent Network</h1>
+        <p className="text-[var(--primary-500)] text-sm mt-1">
+          {alumni.length} alumni · {students.length} students in the cohort
+        </p>
+      </motion.div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" />
+        <input
+          type="text"
+          placeholder="Search by name, skill, company…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] outline-none focus:border-[#F97316]/50 transition-colors"
+        />
       </div>
 
-      <div className="space-y-4">
-        <div className="glass-panel border border-[var(--border)] rounded-xl shadow-sm p-4 flex justify-between items-center">
-            <h2 className="font-semibold flex items-center gap-2"><BookOpen size={18} className="text-[var(--primary-500)]"/> University of Bristol Alumni Suggestions</h2>
-            <button className="text-[var(--primary-500)] hover:text-[var(--foreground)] p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"><Filter size={18}/></button>
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-1 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl p-1 w-fit">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+              tab === t.id
+                ? 'bg-[#F97316] text-white shadow-lg shadow-[#F97316]/20'
+                : 'text-[var(--primary-500)] hover:text-[var(--foreground)]'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-        {loading ? (
-             <div className="glass-panel p-8 text-center text-[var(--primary-500)] font-semibold rounded-xl border border-[var(--border)] shadow-sm">Connecting to Network...</div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-               {alumni.map((alum, i) => (
-                  <div key={alum._id || i} className="glass-panel border border-[var(--border)] rounded-xl shadow-sm overflow-hidden flex flex-col items-center p-4 relative text-center group">
-                      <div className="absolute top-0 w-full h-16 bg-gradient-to-tr from-[var(--primary-500)] to-emerald-500 opacity-20"></div>
-                      <div className="w-20 h-20 rounded-full border-4 border-[var(--background)] bg-[var(--background)] mb-3 mt-4 relative z-10 mx-auto shadow-sm flex items-center justify-center text-3xl font-bold text-[var(--primary-600)]">
-                          {alum.name.charAt(0)}
-                      </div>
-                      <h3 className="font-bold text-[var(--foreground)] group-hover:text-[var(--primary-500)] transition-colors cursor-pointer leading-tight mb-1">{alum.name}</h3>
-                      <p className="text-xs text-[var(--primary-600)] mb-4 h-8 overflow-hidden">{alum.role} at {alum.company}</p>
-                      
-                      <button 
-                        onClick={(e) => handleConnect(e, alum._id || i)} 
-                        disabled={connectedIds.has(alum._id || i)}
-                        className={`w-full mt-auto py-2 rounded-xl transition-all font-medium flex justify-center items-center gap-2 ${connectedIds.has(alum._id || i) ? 'bg-emerald-500/10 text-emerald-500' : 'bg-[var(--foreground)] text-[var(--background)] hover:opacity-90'}`}
-                      >
-                         {connectedIds.has(alum._id || i) ? <><Check size={16}/> Pendng</> : <><UserPlus size={16}/> Connect</>}
-                      </button>
-                  </div>
-               ))}
-               {alumni.length === 0 && <div className="col-span-full p-8 text-center text-[var(--primary-500)] glass-panel shadow-sm rounded-xl border border-[var(--border)]">No Alumni data seeded.</div>}
+      {/* Alumni grid */}
+      {tab === 'alumni' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredAlumni.length === 0 ? (
+            <div className="col-span-2 glass-panel border border-[var(--border)] rounded-2xl p-12 text-center text-[var(--primary-500)]">
+              No alumni match your search.
             </div>
-          )}
-      </div>
+          ) : filteredAlumni.map((a, idx) => (
+            <motion.div
+              key={a._id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04 }}
+              className="glass-panel border border-[var(--border)] hover:border-[var(--primary-500)]/30 rounded-2xl p-5 transition-all duration-300"
+            >
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F97316]/20 to-[#14B8A6]/10 border border-[var(--border)] flex items-center justify-center text-lg font-black text-[var(--foreground)] shrink-0">
+                  {a.name?.[0] || '?'}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-[var(--foreground)] font-bold truncate">{a.name}</h3>
+                  <p className="text-[var(--primary-500)] text-sm truncate">{a.role} · {a.company}</p>
+                  <p className="text-[var(--primary-500)] text-xs">Class of {a.graduation_year}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {(a.expertise || []).map((e) => (
+                  <span key={e} className="px-2 py-0.5 rounded-full text-xs bg-[#14B8A6]/10 text-[#14B8A6] border border-[#14B8A6]/20 font-medium">
+                    {e}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Students grid (employer/admin only) */}
+      {tab === 'students' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredStudents.length === 0 ? (
+            <div className="col-span-2 glass-panel border border-[var(--border)] rounded-2xl p-12 text-center text-[var(--primary-500)]">
+              No students match your search.
+            </div>
+          ) : filteredStudents.map((s, idx) => (
+            <motion.div
+              key={s._id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04 }}
+              className="glass-panel border border-[var(--border)] hover:border-[var(--primary-500)]/30 rounded-2xl p-5 transition-all duration-300"
+            >
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center font-black text-[var(--foreground)]">
+                    {s.name?.[0] || '?'}
+                  </div>
+                  <div>
+                    <h3 className="text-[var(--foreground)] font-bold text-sm">{s.name}</h3>
+                    <p className="text-[var(--primary-500)] text-xs">{s.domain_competency || 'Unverified'}</p>
+                  </div>
+                </div>
+                <div className={`text-lg font-black shrink-0 ${
+                  (s.hireability_score || 0) >= 80 ? 'text-emerald-400' :
+                  (s.hireability_score || 0) >= 60 ? 'text-[#F97316]' : 'text-[var(--primary-500)]'
+                }`}>
+                  {s.hireability_score || 0}
+                  <span className="text-xs text-[var(--primary-500)] font-normal">/100</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {(s.skills || []).slice(0, 5).map((sk) => (
+                                    <span key={sk} className="px-2 py-0.5 rounded-full text-xs bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20 font-medium">
+                    {sk}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

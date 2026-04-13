@@ -1,161 +1,157 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { Hexagon, Lock, User, Mail, Briefcase, Moon, Sun } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import api from '../api/axios';
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
   const { loginUser } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [mode, setMode] = useState('login');
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const [formData, setFormData] = useState({
-    name: '', email: '', password: '', role: 'student'
-  });
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const roles = [
+    { value: 'student',  label: 'Student',  icon: '🎓' },
+    { value: 'employer', label: 'Employer', icon: '🏢' },
+    { value: 'alumni',   label: 'Alumni',   icon: '🤝' },
+    { value: 'admin',    label: 'Admin',    icon: '🛡️' },
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    
+    setLoading(true);
+    setError('');
     try {
-      let bodyData;
-      let headers = {};
-      
-      if (isLogin) {
-         bodyData = new URLSearchParams();
-         bodyData.append('username', formData.email);
-         bodyData.append('password', formData.password);
-         headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+      if (mode === 'login') {
+        const params = new URLSearchParams();
+        params.append('username', form.email);
+        params.append('password', form.password);
+        const res = await api.post('/api/auth/login', params, {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+        loginUser(res.data);
       } else {
-         bodyData = JSON.stringify(formData);
-         headers = { 'Content-Type': 'application/json' };
+        const res = await api.post('/api/auth/register', form);
+        loginUser(res.data);
       }
-
-      const baseUrl = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://cohortconnect-1.onrender.com');
-      const res = await fetch(`${baseUrl}/api/auth/${isLogin ? 'login' : 'register'}`, {
-        method: 'POST',
-        headers,
-        body: bodyData
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
-        loginUser(data);
-        if(data.role === 'admin') navigate('/admin');
-        else if(data.role === 'employer') navigate('/employer');
-        else navigate('/student');
-      } else {
-        setError(data.detail || 'Authentication failed');
-      }
-    } catch(err) {
-       setError("Network error connecting to live auth server.");
+      const role = localStorage.getItem('cc_role') || form.role;
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'employer') navigate('/employer');
+      else navigate('/student');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Something went wrong. Please try again.');
     } finally {
-       setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex text-[var(--foreground)] bg-[var(--background)] transition-colors duration-300">
-      <button onClick={toggleTheme} className="absolute top-6 right-6 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors z-50">
-        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-      </button>
+    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Ambient blobs */}
+      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#F97316] opacity-[0.05] blur-[140px] animate-pulse pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-[#14B8A6] opacity-[0.05] blur-[120px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      {/* Left side visual */}
-      <div className="hidden lg:flex flex-1 flex-col justify-center px-16 relative overflow-hidden bg-gradient-to-br from-[var(--background)] to-[var(--card)] border-r border-[var(--border)]">
-        <div className="relative z-10 max-w-lg">
-           <Hexagon size={48} className="mb-8 text-[var(--foreground)]" strokeWidth={1.5} />
-           <h1 className="text-4xl font-light mb-6 tracking-tight">Access the professional network.</h1>
-           <p className="text-lg text-[var(--primary-500)] font-light leading-relaxed">Cohort uses advanced semantic graphs to map students, employers, and alumni effortlessly.</p>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative z-10"
+      >
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#F97316]/20 to-[#14B8A6]/15 border border-[var(--border)] flex items-center justify-center text-xl font-black text-[var(--foreground)] shadow-2xl">
+            CC
+          </div>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">Cohort Connect</h1>
+          <p className="text-[var(--primary-500)] text-sm mt-1">University of Bristol · AI Placement Platform</p>
         </div>
-      </div>
-      
-      {/* Right side form */}
-      <div className="flex-1 flex flex-col justify-center px-8 sm:px-16 lg:px-24">
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={isLogin ? 'login' : 'register'}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-md mx-auto glass-panel p-10 rounded-2xl"
-          >
-             <div className="text-center mb-8 lg:hidden">
-                <Hexagon size={40} className="mx-auto text-[var(--foreground)] mb-4" strokeWidth={1.5} />
-                <h2 className="text-xl font-medium text-[var(--foreground)]">Cohort</h2>
-             </div>
 
-             <h2 className="text-2xl font-semibold text-[var(--foreground)] mb-2">{isLogin ? 'Sign In' : 'Join Now'}</h2>
-             <p className="text-sm text-[var(--primary-500)] mb-8">Secure entry to your workspace.</p>
+        {/* Card */}
+        <div className="glass-panel border border-[var(--border)] rounded-2xl p-8 shadow-2xl">
+          {/* Toggle */}
+          <div className="flex bg-black/5 dark:bg-white/5 rounded-xl p-1 mb-6">
+            {['login', 'register'].map(m => (
+              <button
+                key={m}
+                onClick={() => { setMode(m); setError(''); }}
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  mode === m
+                    ? 'bg-[#F97316] text-white shadow-lg shadow-[#F97316]/20'
+                    : 'text-[var(--primary-500)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                {m === 'login' ? 'Sign In' : 'Register'}
+              </button>
+            ))}
+          </div>
 
-             {error && <div className="bg-red-500/10 text-red-500 p-3 rounded mb-4 text-sm font-medium border border-red-500/20">{error}</div>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'register' && (
+              <input
+                type="text"
+                placeholder="Full name"
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+                required
+                className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] focus:outline-none focus:border-[#F97316]/50 transition-colors"
+              />
+            )}
+            <input
+              type="email"
+              placeholder="Email address"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
+              required
+              className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] focus:outline-none focus:border-[#F97316]/50 transition-colors"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+              required
+              className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] focus:outline-none focus:border-[#F97316]/50 transition-colors"
+            />
 
-             <form onSubmit={handleSubmit} className="space-y-4">
-                {!isLogin && (
-                  <div>
-                    <label className="text-xs font-semibold text-[var(--primary-500)] block mb-1">Full Name</label>
-                    <div className="relative">
-                      <User size={16} className="absolute left-3 top-3 text-[var(--primary-500)]" />
-                      <input required type="text" value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value})} className="w-full pl-10 pr-3 py-2 bg-transparent border border-[var(--border)] rounded-md focus:border-[var(--foreground)] outline-none text-[var(--foreground)] transition-colors" placeholder="e.g. Jane Doe" />
-                    </div>
-                  </div>
-                )}
-                
-                <div>
-                  <label className="text-xs font-semibold text-[var(--primary-500)] block mb-1">Email</label>
-                  <div className="relative">
-                    <Mail size={16} className="absolute left-3 top-3 text-[var(--primary-500)]" />
-                    <input required type="email" value={formData.email} onChange={e=>setFormData({...formData, email: e.target.value})} className="w-full pl-10 pr-3 py-2 bg-transparent border border-[var(--border)] rounded-md focus:border-[var(--foreground)] outline-none text-[var(--foreground)] transition-colors" placeholder="user@domain.com" />
-                  </div>
-                </div>
+            {mode === 'register' && (
+              <div className="grid grid-cols-2 gap-2">
+                {roles.map(r => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, role: r.value })}
+                    className={`py-2.5 px-3 rounded-xl border text-sm transition-all duration-200 flex items-center gap-2 font-medium ${
+                      form.role === r.value
+                        ? 'border-[#F97316]/60 bg-[#F97316]/10 text-[#F97316]'
+                        : 'border-[var(--border)] text-[var(--primary-500)] hover:text-[var(--foreground)] hover:border-[var(--primary-500)]'
+                    }`}
+                  >
+                    {r.icon} {r.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
-                <div>
-                  <label className="text-xs font-semibold text-[var(--primary-500)] block mb-1">Password</label>
-                  <div className="relative">
-                    <Lock size={16} className="absolute left-3 top-3 text-[var(--primary-500)]" />
-                    <input required type="password" value={formData.password} onChange={e=>setFormData({...formData, password: e.target.value})} className="w-full pl-10 pr-3 py-2 bg-transparent border border-[var(--border)] rounded-md focus:border-[var(--foreground)] outline-none text-[var(--foreground)] transition-colors" placeholder="••••••••" />
-                  </div>
-                </div>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
 
-                {!isLogin && (
-                  <div>
-                    <label className="text-xs font-semibold text-[var(--primary-500)] block mb-1">Account Role</label>
-                    <div className="relative">
-                      <Briefcase size={16} className="absolute left-3 top-3 text-[var(--primary-500)]" />
-                      <select value={formData.role} onChange={e=>setFormData({...formData, role: e.target.value})} className="w-full pl-10 pr-3 py-2 bg-transparent border border-[var(--border)] rounded-md focus:border-[var(--foreground)] outline-none appearance-none text-[var(--foreground)] transition-colors">
-                         <option className="bg-[var(--background)] text-[var(--foreground)]" value="student">Student</option>
-                         <option className="bg-[var(--background)] text-[var(--foreground)]" value="employer">Employer / Recruiter</option>
-                         <option className="bg-[var(--background)] text-[var(--foreground)]" value="alumni">Alumni</option>
-                         <option className="bg-[var(--background)] text-[var(--foreground)]" value="admin">Administrator</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                <button disabled={isLoading} className="w-full bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 font-medium py-2.5 rounded-md shadow-sm transition-opacity mt-6 disabled:opacity-50">
-                   {isLoading ? 'Authenticating...' : (isLogin ? 'Sign In' : 'Join')}
-                </button>
-             </form>
-
-             <div className="mt-8 text-center border-t border-[var(--border)] pt-6">
-                <span className="text-sm text-[var(--primary-500)]">
-                   {isLogin ? "No account? " : "Already have an account? "}
-                   <button onClick={()=>setIsLogin(!isLogin)} className="text-[var(--foreground)] font-medium hover:underline">
-                      {isLogin ? 'Request access' : 'Sign in'}
-                   </button>
-                </span>
-             </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-[#F97316] hover:bg-[#ea6c0a] text-white font-bold text-sm transition-all duration-200 disabled:opacity-50 shadow-lg shadow-[#F97316]/20 hover:shadow-[#F97316]/30"
+            >
+              {loading
+                ? 'Please wait…'
+                : mode === 'login' ? 'Sign In' : 'Create Account'}
+            </button>
+          </form>
+        </div>
+      </motion.div>
     </div>
   );
 }

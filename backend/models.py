@@ -37,14 +37,17 @@ class StudentProfile(BaseModel):
     email: str = ""
     skills: List[str] = []
     projects: List[str] = []
+    experience: List[str] = []
     domain_competency: str = ""
     hireability_score: int = 0
     improvement_feedback: List[str] = []
     cv_text: str = ""
+    raw_text: str = ""
 
 class CVExtraction(BaseModel):
     skills: List[str]
     projects: List[str]
+    experience: List[str]
     domain_competency: str
     hireability_score: int
     improvement_feedback: List[str]
@@ -64,3 +67,19 @@ class Alumni(BaseModel):
     company: str
     graduation_year: int
     expertise: List[str]
+    email: Optional[str] = ""
+
+class ReferralDraftRequest(BaseModel):
+    student_id: str
+    job_id: str
+
+class ReferralApproval(BaseModel):
+    referral_id: str
+    approved_email: str
+    action: str  # "approve" or "reject"
+
+class OutcomeUpdate(BaseModel):
+    student_id: str
+    outcome: str  # "interview", "offer", "rejected", "placed"
+    employer: Optional[str] = ""
+    job_title: Optional[str] = ""

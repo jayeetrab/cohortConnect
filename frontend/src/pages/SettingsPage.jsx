@@ -1,199 +1,318 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Bell, Eye, Shield, ChevronRight, Lock, CheckCircle, 
-  AlertCircle, X, Smartphone, Globe, Cloud, Zap, 
-  Sparkles, Fingerprint, Mail, Share2
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
+import api from '../api/axios';
+import {
+  Shield, Lock, Globe, Eye, Mail, Zap, Moon, Sun,
+  LogOut, CheckCircle, AlertCircle, Fingerprint,
+  EyeOff, Cloud, Share2
 } from 'lucide-react';
-import axios from '../api/axios';
+
+const Toggle = ({ enabled, onChange }) => (
+  <button
+    onClick={() => onChange(!enabled)}
+    className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
+      enabled ? 'bg-[#F97316]' : 'bg-black/20 dark:bg-white/10'
+    }`}
+  >
+    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${
+      enabled ? 'translate-x-5' : 'translate-x-0'
+    }`} />
+  </button>
+);
 
 export default function SettingsPage() {
-  const [activeForm, setActiveForm] = useState(null);
-  const [authData, setAuthData] = useState({ current_password: '', new_password: '' });
-  const [status, setStatus] = useState({ type: null, message: '' });
-  const [loading, setLoading] = useState(false);
+  const { user, logoutUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+
+  const [authData, setAuthData] = useState({ current_password: '', new_password: '', confirm: '' });
+  const [pwStatus, setPwStatus] = useState(null);
+  const [pwLoading, setPwLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  // Settings State
-  const [settings, setSettings] = useState({
+  const [toggles, setToggles] = useState({
     twoFactor: false,
-    emailNotips: true,
     profileVisible: true,
     stealthMode: false,
-    analyticsEnabled: true
+    emailNotifs: true,
+    analyticsEnabled: true,
   });
 
   const handleToggle = (key) => {
     setSyncing(true);
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-    // Simulate cloud sync
+    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
     setTimeout(() => setSyncing(false), 800);
   };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setStatus({ type: null, message: '' });
-    try {
-      await axios.put('/api/auth/password', authData);
-      setStatus({ type: 'success', message: 'Credentials updated successfully.' });
-      setAuthData({ current_password: '', new_password: '' });
-      setTimeout(() => setActiveForm(null), 2000);
-    } catch (err) {
-      setStatus({ type: 'error', message: err.response?.data?.detail || 'Failed to update password' });
-    } finally {
-      setLoading(false);
+    if (authData.new_password !== authData.confirm) {
+      setPwStatus({ ok: false, msg: 'New passwords do not match.' });
+      return;
     }
+    if (authData.new_password.length < 8) {
+      setPwStatus({ ok: false, msg: 'Password must be at least 8 characters.' });
+      return;
+    }
+    setPwLoading(true);
+    setPwStatus(null);
+    try {
+      await api.put('/api/auth/password', {
+        current_password: authData.current_password,
+        new_password: authData.new_password,
+      });
+      setPwStatus({ ok: true, msg: 'Password updated successfully.' });
+      setAuthData({ current_password: '', new_password: '', confirm: '' });
+    } catch (err) {
+      setPwStatus({ ok: false, msg: err.response?.data?.detail || 'Password update failed.' });
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    navigate('/auth');
   };
 
   const menuSections = [
     {
-      title: "Security Hub",
-      icon: <Shield className="text-emerald-500" size={24} />,
+      title: 'Security Hub',
+      icon: <Shield className="text-emerald-500" size={20} />,
       items: [
-        { id: 'password', label: "Account Credentials", description: "Secure your access password", icon: <Lock size={18}/> },
-        { id: '2fa', label: "Identity Protection", description: "Enable 2FA via authenticator app", icon: <Fingerprint size={18}/>, type: 'toggle', key: 'twoFactor' }
-      ]
+        {
+          id: 'password',
+          label: 'Account Credentials',
+          description: 'Update your login password',
+          icon: <Lock size={16} />,
+          type: 'form',
+        },
+        {
+          id: '2fa',
+          label: 'Identity Protection',
+          description: 'Enable two-factor authentication',
+          icon: <Fingerprint size={16} />,
+          type: 'toggle',
+          key: 'twoFactor',
+        },
+      ],
     },
     {
-      title: "Career Presence",
-      icon: <Globe className="text-sky-500" size={24} />,
+      title: 'Career Presence',
+      icon: <Globe className="text-sky-500" size={20} />,
       items: [
-        { id: 'visibility', label: "Hiring Visibility", description: "Allow placement officers to see your profile", icon: <Eye size={18}/>, type: 'toggle', key: 'profileVisible' },
-        { id: 'stealth', label: "Confidential Mode", description: "Hide your identity from the general network", icon: <Share2 size={18}/>, type: 'toggle', key: 'stealthMode' }
-      ]
+        {
+          id: 'visibility',
+          label: 'Hiring Visibility',
+          description: 'Allow employers to discover your profile',
+          icon: <Eye size={16} />,
+          type: 'toggle',
+          key: 'profileVisible',
+        },
+        {
+          id: 'stealth',
+          label: 'Confidential Mode',
+          description: 'Hide your identity from the general network',
+          icon: <EyeOff size={16} />,
+          type: 'toggle',
+          key: 'stealthMode',
+        },
+      ],
     },
     {
-      title: "Communications",
-      icon: <Cloud className="text-purple-500" size={24} />,
+      title: 'Communications',
+      icon: <Cloud className="text-purple-500" size={20} />,
       items: [
-        { id: 'email', label: "Placement Alerts", description: "Get job alerts via email", icon: <Mail size={18}/>, type: 'toggle', key: 'emailNotips' },
-        { id: 'analytics', label: "Strategy Feedback", description: "Help improve our matching with anonymous data", icon: <Zap size={18}/>, type: 'toggle', key: 'analyticsEnabled' }
-      ]
-    }
+        {
+          id: 'email',
+          label: 'Placement Alerts',
+          description: 'Receive job match notifications by email',
+          icon: <Mail size={16} />,
+          type: 'toggle',
+          key: 'emailNotifs',
+        },
+        {
+          id: 'analytics',
+          label: 'Anonymous Analytics',
+          description: 'Help improve matching with anonymous usage data',
+          icon: <Zap size={16} />,
+          type: 'toggle',
+          key: 'analyticsEnabled',
+        },
+      ],
+    },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-20">
-      
-      <div className="flex justify-between items-end gap-6 pt-6">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-[var(--foreground)] tracking-tighter">Command Center</h1>
-          <p className="text-[var(--primary-500)] text-lg font-medium">Calibrate your privacy and placement visibility parameters.</p>
+    <div className="max-w-2xl mx-auto space-y-10 pb-10">
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-[var(--primary-500)] mb-1">Settings</p>
+            <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight">Command Centre</h1>
+            <p className="text-[var(--primary-500)] text-sm mt-1">Manage your privacy and placement visibility.</p>
+          </div>
+          <AnimatePresence>
+            {syncing && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20"
+              >
+                <span className="w-3 h-3 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                Saving
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <AnimatePresence>
-          {syncing && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 text-xs font-bold uppercase tracking-widest rounded-full border border-emerald-500/20 mb-2"
-            >
-              <Sparkles size={12} className="animate-spin" /> Updating Ecosystem
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      </motion.div>
 
-      <div className="space-y-8">
-        {menuSections.map((section, sId) => (
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: sId * 0.1 }}
-            key={sId} 
-            className="group"
-          >
-            <div className="flex items-center gap-3 mb-4 px-4">
-              <span className="p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)]">{section.icon}</span>
-              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-[var(--primary-500)]">{section.title}</h2>
+      {/* Appearance */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-panel border border-[var(--border)] rounded-2xl p-5"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {theme === 'dark'
+              ? <Moon size={18} className="text-[var(--primary-500)]" />
+              : <Sun size={18} className="text-yellow-400" />}
+            <div>
+              <p className="text-sm font-bold text-[var(--foreground)]">
+                {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+              </p>
+              <p className="text-xs text-[var(--primary-500)]">Toggle interface appearance</p>
             </div>
+          </div>
+          <Toggle enabled={theme === 'dark'} onChange={toggleTheme} />
+        </div>
+      </motion.div>
 
-            <div className="glass-panel border border-[var(--border)] rounded-[2.5rem] overflow-hidden bg-[var(--background)]/60 backdrop-blur-3xl">
-              <div className="divide-y divide-[var(--border)]">
-                {section.items.map((item) => (
-                  <div key={item.id} className="relative">
-                    <div 
-                      onClick={() => item.type !== 'toggle' && setActiveForm(activeForm === item.id ? null : item.id)}
-                      className={`p-8 flex items-center justify-between transition-all ${item.type !== 'toggle' ? 'hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer' : ''}`}
-                    >
-                      <div className="flex items-center gap-6">
-                        <div className="p-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-2xl text-[var(--primary-600)]">
-                          {item.icon}
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-black text-[var(--foreground)] tracking-tight">{item.label}</h3>
-                          <p className="text-sm text-[var(--primary-600)] font-medium mt-1">{item.description}</p>
-                        </div>
+      {/* Settings sections */}
+      {menuSections.map((section, sIdx) => (
+        <motion.div
+          key={section.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: sIdx * 0.08 }}
+          className="space-y-3"
+        >
+          <div className="flex items-center gap-3 px-1">
+            <span className="p-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-[var(--border)]">
+              {section.icon}
+            </span>
+            <h2 className="text-xs font-black uppercase tracking-widest text-[var(--primary-500)]">
+              {section.title}
+            </h2>
+          </div>
+
+          <div className="glass-panel border border-[var(--border)] rounded-2xl overflow-hidden divide-y divide-[var(--border)]">
+            {section.items.map((item) => (
+              <div key={item.id} className="p-5">
+                {item.type === 'toggle' ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[var(--primary-500)]">{item.icon}</span>
+                      <div>
+                        <p className="text-sm font-bold text-[var(--foreground)]">{item.label}</p>
+                        <p className="text-xs text-[var(--primary-500)]">{item.description}</p>
                       </div>
-
-                      {item.type === 'toggle' ? (
-                        <button 
-                          onClick={() => handleToggle(item.key)}
-                          className={`w-14 h-8 rounded-full transition-all relative flex items-center p-1 ${settings[item.key] ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-[var(--border)] border border-[var(--border)]'}`}
-                        >
-                          <motion.div 
-                            animate={{ x: settings[item.key] ? 24 : 0 }}
-                            className={`w-6 h-6 rounded-full shadow-lg ${settings[item.key] ? 'bg-white' : 'bg-[var(--primary-600)]'}`}
-                          />
-                        </button>
-                      ) : (
-                        <ChevronRight className={`text-[var(--primary-500)] transition-transform ${activeForm === item.id ? 'rotate-90' : ''}`} />
-                      )}
                     </div>
-                    
-                    {/* PASSWORD CHANGE FORM */}
-                    <AnimatePresence>
-                      {activeForm === 'password' && item.id === 'password' && (
-                        <motion.div 
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden border-t border-[var(--border)] bg-black/5 dark:bg-white/5"
-                        >
-                          <form onSubmit={handlePasswordChange} className="p-8 md:p-12 space-y-6 max-w-xl mx-auto">
-                            {status.message && (
-                               <div className={`p-4 rounded-2xl flex items-center gap-3 text-sm font-bold border ${status.type === 'success' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                                  {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />} {status.message}
-                               </div>
-                            )}
-                            <div className="space-y-4">
-                              <div>
-                                <label className="text-xs font-black text-[var(--primary-500)] uppercase tracking-widest pl-1">Current Password</label>
-                                <input 
-                                  type="password" required 
-                                  value={authData.current_password} 
-                                  onChange={e => setAuthData({...authData, current_password: e.target.value})}
-                                  className="w-full mt-2 bg-[var(--background)] border border-[var(--border)] rounded-2xl p-4 outline-none text-[var(--foreground)] font-bold focus:border-[var(--primary-500)] transition-all" 
-                                />
-                              </div>
-                              <div>
-                                <label className="text-xs font-black text-[var(--primary-500)] uppercase tracking-widest pl-1">New Identity Code</label>
-                                <input 
-                                  type="password" required 
-                                  value={authData.new_password} 
-                                  onChange={e => setAuthData({...authData, new_password: e.target.value})}
-                                  className="w-full mt-2 bg-[var(--background)] border border-[var(--border)] rounded-2xl p-4 outline-none text-[var(--foreground)] font-bold focus:border-[var(--primary-500)] transition-all" 
-                                />
-                              </div>
-                            </div>
-                            <div className="flex gap-4 justify-end pt-4">
-                               <button type="button" onClick={() => setActiveForm(null)} className="px-6 py-3 font-bold text-[var(--primary-500)] hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-all">Cancel</button>
-                               <button type="submit" disabled={loading} className="flex items-center gap-2 px-8 py-3 font-black bg-[var(--foreground)] text-[var(--background)] rounded-2xl hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 shadow-xl">
-                                  {loading ? "Re-syncing..." : "Update Security"}
-                               </button>
-                            </div>
-                          </form>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <Toggle
+                      enabled={toggles[item.key]}
+                      onChange={() => handleToggle(item.key)}
+                    />
                   </div>
-                ))}
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[var(--primary-500)]">{item.icon}</span>
+                      <div>
+                        <p className="text-sm font-bold text-[var(--foreground)]">{item.label}</p>
+                        <p className="text-xs text-[var(--primary-500)]">{item.description}</p>
+                      </div>
+                    </div>
+                    <form onSubmit={handlePasswordChange} className="space-y-3">
+                      {[
+                        { key: 'current_password', placeholder: 'Current password' },
+                        { key: 'new_password', placeholder: 'New password (min 8 chars)' },
+                        { key: 'confirm', placeholder: 'Confirm new password' },
+                      ].map((f) => (
+                        <input
+                          key={f.key}
+                          type="password"
+                          placeholder={f.placeholder}
+                          value={authData[f.key]}
+                          onChange={(e) => setAuthData({ ...authData, [f.key]: e.target.value })}
+                          required
+                          className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] outline-none focus:border-[#F97316]/50 transition-colors"
+                        />
+                      ))}
+
+                      <AnimatePresence>
+                        {pwStatus && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold ${
+                              pwStatus.ok
+                                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                                : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                            }`}
+                          >
+                            {pwStatus.ok ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
+                            {pwStatus.msg}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="submit"
+                          disabled={pwLoading}
+                          className="px-5 py-2.5 rounded-xl bg-[#F97316] hover:bg-[#ea6c0a] text-white text-sm font-bold transition-all shadow-lg shadow-[#F97316]/20 disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {pwLoading
+                            ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Updating…</>
+                            : 'Update Password'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
+            ))}
+          </div>
+        </motion.div>
+      ))}
+
+      {/* Danger zone */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-panel border border-red-500/20 rounded-2xl p-5"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-[var(--foreground)]">Sign out of Cohort Connect</p>
+            <p className="text-xs text-[var(--primary-500)]">You will be redirected to the login screen.</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-sm font-bold transition-all"
+          >
+            <LogOut size={15} /> Sign out
+          </button>
+        </div>
+      </motion.div>
+        </div>
   );
 }

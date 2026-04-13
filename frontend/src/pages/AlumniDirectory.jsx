@@ -1,212 +1,246 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import axios from '../api/axios';
-import { 
-  Search, MapPin, Briefcase, Filter, MessageSquare, 
-  UserPlus, Check, X, Shield, Star, Award, ExternalLink,
-  ChevronRight, Calendar
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, Search, Star } from 'lucide-react';
+import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function AlumniDirectory() {
+  const { user } = useAuth();
   const [alumni, setAlumni] = useState([]);
+  const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [connectedIds, setConnectedIds] = useState(new Set());
-  const [selectedAlum, setSelectedAlum] = useState(null);
-  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+  const [tab, setTab] = useState('directory');
+  const [actioning, setActioning] = useState(null);
+  const [editEmails, setEditEmails] = useState({});
+  const [actionedIds, setActionedIds] = useState(new Set());
 
-  useEffect(() => {
-    const fetchAlumni = async () => {
-      try {
-        const res = await axios.get('/api/alumni');
-        setAlumni(res.data.data || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+  useEffect(() => { fetchAll(); }, []);
+
+  const fetchAll = async () => {
+    setLoading(true);
+    try {
+      const alumniRes = await api.get('/api/alumni');
+      setAlumni(alumniRes.data.data || []);
+      if (user?.role === 'alumni') {
+        const refRes = await api.get('/api/referrals/my');
+        const refs = refRes.data.data || [];
+        setReferrals(refs);
+        const emails = {};
+        refs.forEach((r) => { emails[r._id] = r.drafted_email || ''; });
+        setEditEmails(emails);
       }
-    };
-    fetchAlumni();
-  }, []);
-
-  const handleConnect = (e, id) => {
-    if(e) e.stopPropagation();
-    const newSet = new Set(connectedIds);
-    newSet.add(id);
-    setConnectedIds(newSet);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredAlumni = alumni.filter(a => 
-    a.name.toLowerCase().includes(search.toLowerCase()) || 
-    (a.company && a.company.toLowerCase().includes(search.toLowerCase()))
+  const handleAction = async (referralId, action) => {
+    setActioning(referralId);
+    try {
+      await api.post('/api/referrals/approve', {
+        referral_id: referralId,
+        approved_email: editEmails[referralId] || '',
+        action,
+      });
+      setActionedIds((prev) => new Set([...prev, referralId]));
+      setReferrals((prev) =>
+        prev.map((r) => r._id === referralId ? { ...r, status: action === 'approve' ? 'approved' : 'rejected' } : r)
+      );
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setActioning(null);
+    }
+  };
+
+  const filtered = alumni.filter((a) =>
+    `${a.name} ${a.company} ${a.role} ${(a.expertise || []).join(' ')}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  const StatusBadge = ({ status }) => {
+    const styles = {
+      pending: 'bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20',
+      approved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
+    };
+    return (
+      <span className={`text-xs px-2.5 py-0.5 rounded-full border capitalize font-semibold ${styles[status] || styles.pending}`}>
+        {status}
+      </span>
+    );
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-10 h-10 border-4 border-[var(--border)] border-t-[#F97316] rounded-full animate-spin" />
+    </div>
   );
 
   return (
-    <div className="space-y-12 pb-20 max-w-6xl mx-auto">
-      
-      {/* HEADER SECTION */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-6"
-      >
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-[var(--foreground)] tracking-tighter">Alumni Network</h1>
-          <p className="text-[var(--primary-500)] text-lg font-medium">Connect with verified graduates and mentors across the Cohort Connect ecosystem.</p>
-        </div>
-        
-        <div className="flex gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-96">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search by name or company..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] focus:outline-none focus:border-[var(--primary-500)] transition-all shadow-sm"
-            />
-          </div>
-        </div>
+    <div className="space-y-8 pb-10">
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <p className="text-xs uppercase tracking-widest text-[var(--primary-500)] mb-1">Alumni Network</p>
+        <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight">
+          {user?.role === 'alumni' ? `Welcome, ${user.name?.split(' ')[0]}` : 'Alumni Directory'}
+        </h1>
+        <p className="text-[var(--primary-500)] text-sm mt-1">
+          {user?.role === 'alumni'
+            ? 'Review referral requests drafted by the platform on your behalf.'
+            : `${alumni.length} Bristol alumni in the network`}
+        </p>
       </motion.div>
 
-      {/* GRID SECTION */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="glass-panel h-80 rounded-[2rem] bg-black/5 dark:bg-white/5" />
+      {/* Tabs for alumni role */}
+      {user?.role === 'alumni' && (
+        <div className="flex gap-1 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl p-1 w-fit">
+          {[
+            { id: 'referrals', label: `📨 Referral Requests (${referrals.length})` },
+            { id: 'directory', label: '👥 Directory' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                tab === t.id
+                  ? 'bg-[#F97316] text-white shadow-lg shadow-[#F97316]/20'
+                  : 'text-[var(--primary-500)] hover:text-[var(--foreground)]'
+              }`}
+            >
+              {t.label}
+            </button>
           ))}
         </div>
-      ) : (
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence>
-            {filteredAlumni.map((alum) => (
-              <motion.div
-                layout
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                onClick={() => setSelectedAlum(alum)}
-                key={alum._id}
-                className="glass-panel rounded-[2rem] p-8 group hover:border-[var(--primary-500)] hover:shadow-2xl hover:-translate-y-1 transition-all flex flex-col cursor-pointer bg-[var(--background)]"
-              >
-                <div className="flex items-center gap-5 mb-8">
-                  <div className="w-16 h-16 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-[var(--primary-600)] shadow-inner border border-[var(--border)] text-2xl font-black">
-                    {alum.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black text-[var(--foreground)] group-hover:text-emerald-500 transition-colors tracking-tight">{alum.name}</h3>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--primary-500)] uppercase tracking-widest mt-1">
-                      <Star size={12} className="text-emerald-500" /> Class of {alum.graduation_year}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-8 flex-1">
-                  <div className="flex items-center gap-3 text-[var(--primary-600)]">
-                    <Briefcase size={18} className="text-[var(--primary-500)] shrink-0" />
-                    <span className="font-bold text-sm tracking-tight truncate">{alum.role}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-[var(--primary-600)]">
-                    <Shield size={18} className="text-[var(--primary-500)] shrink-0" />
-                    <span className="font-bold text-sm tracking-tight truncate">{alum.company}</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mb-8 h-10 overflow-hidden">
-                  {(alum.expertise || []).slice(0, 3).map((exp, i) => (
-                    <span key={i} className="text-[10px] font-bold px-3 py-1 bg-black/5 dark:bg-white/5 rounded-lg border border-[var(--border)] text-[var(--primary-500)] uppercase tracking-wider">
-                      {exp}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="pt-6 border-t border-[var(--border)] flex items-center justify-between group-hover:px-2 transition-all">
-                  <span className="text-xs font-bold text-[var(--primary-600)] uppercase tracking-widest">Connect with Alumni</span>
-                  <ChevronRight size={16} className="text-[var(--primary-500)] group-hover:translate-x-1 transition-transform" />
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
       )}
 
-      {/* DETAILED PROFILE MODAL */}
-      <AnimatePresence>
-        {selectedAlum && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedAlum(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-[var(--background)] border border-[var(--border)] rounded-[3rem] shadow-2xl overflow-hidden"
+      {/* Referral requests tab */}
+      {tab === 'referrals' && user?.role === 'alumni' && (
+        <div className="space-y-5">
+          {referrals.length === 0 ? (
+            <div className="glass-panel border border-[var(--border)] rounded-2xl p-12 text-center text-[var(--primary-500)]">
+              No referral requests yet. The platform will notify you when a student is matched to your profile.
+            </div>
+          ) : referrals.map((ref) => (
+            <motion.div
+              key={ref._id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-panel border border-[var(--border)] rounded-2xl p-6 space-y-5"
             >
-              <button 
-                onClick={() => setSelectedAlum(null)}
-                className="absolute top-8 right-8 p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors z-10"
-              >
-                <X size={24} className="text-[var(--primary-500)]" />
-              </button>
-
-              <div className="p-8 md:p-12 space-y-10">
-                <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-8">
-                  <div className="w-24 h-24 rounded-3xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-4xl font-black text-emerald-500 shadow-inner border border-[var(--border)]">
-                    {selectedAlum.name.charAt(0)}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-[var(--foreground)] font-black">{ref.student_name}</h3>
+                    <StatusBadge status={ref.status} />
                   </div>
-                  <div className="space-y-2">
-                    <h2 className="text-4xl font-black tracking-tighter text-[var(--foreground)]">{selectedAlum.name}</h2>
-                    <p className="text-xl font-bold text-emerald-500">{selectedAlum.role} @ {selectedAlum.company}</p>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                       <span className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[var(--primary-500)]"><Calendar size={14} /> Alumni Class of {selectedAlum.graduation_year}</span>
-                       <span className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-[var(--primary-500)]"><MapPin size={14} /> Available Mentor</span>
-                    </div>
+                  <p className="text-[var(--primary-500)] text-sm">
+                    Applying for <span className="text-[#F97316] font-semibold">{ref.job_title}</span> at <span className="font-semibold text-[var(--foreground)]">{ref.company}</span>
+                  </p>
+                  <p className="text-[var(--primary-500)] text-xs mt-0.5">
+                    Requested {new Date(ref.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              {ref.status === 'pending' && !actionedIds.has(ref._id) ? (
+                <div className="space-y-3">
+                  <p className="text-xs uppercase tracking-wider text-[var(--primary-500)] font-bold">Review & edit the drafted email</p>
+                  <textarea
+                    value={editEmails[ref._id] || ''}
+                    onChange={(e) => setEditEmails((prev) => ({ ...prev, [ref._id]: e.target.value }))}
+                    rows={8}
+                    className="w-full bg-black/5 dark:bg-white/[0.03] border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] font-mono resize-none outline-none focus:border-[#F97316]/50 transition-colors leading-relaxed"
+                  />
+                  <div className="flex gap-3 justify-end">
+                    <button
+                      onClick={() => handleAction(ref._id, 'reject')}
+                      disabled={actioning === ref._id}
+                      className="px-5 py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-all disabled:opacity-50"
+                    >
+                      Decline
+                    </button>
+                    <button
+                      onClick={() => handleAction(ref._id, 'approve')}
+                      disabled={actioning === ref._id}
+                      className="px-6 py-2.5 rounded-xl bg-[#F97316] hover:bg-[#ea6c0a] text-white text-sm font-bold transition-all shadow-lg shadow-[#F97316]/20 disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {actioning === ref._id
+                        ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
+                        : '✓ Approve Referral'}
+                    </button>
                   </div>
                 </div>
+              ) : (
+                <div className={`px-4 py-3 rounded-xl border text-sm font-semibold ${
+                  ref.status === 'approved'
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                    : 'bg-red-500/10 border-red-500/20 text-red-400'
+                }`}>
+                  {ref.status === 'approved' ? '✓ You approved this referral.' : '✗ You declined this referral.'}
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      )}
 
-                <div className="space-y-4">
-                  <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--primary-600)]">Expertise & Mentorship</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedAlum.expertise.map((exp, i) => (
-                      <span key={i} className="px-5 py-2 bg-black/3 dark:bg-white/3 border border-[var(--border)] rounded-2xl text-sm font-bold text-[var(--foreground)] shadow-sm">
-                        {exp}
+      {/* Directory tab */}
+      {tab === 'directory' && (
+        <div className="space-y-5">
+          {/* Search */}
+          <div className="relative">
+            <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" />
+            <input
+              type="text"
+              placeholder="Search by name, company, skill…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] outline-none focus:border-[#F97316]/50 transition-colors"
+            />
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="glass-panel border border-[var(--border)] rounded-2xl p-12 text-center text-[var(--primary-500)]">
+              No alumni match your search.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filtered.map((a, idx) => (
+                <motion.div
+                  key={a._id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.04 }}
+                  className="glass-panel border border-[var(--border)] hover:border-[var(--primary-500)]/30 rounded-2xl p-5 transition-all duration-300"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F97316]/20 to-[#14B8A6]/10 border border-[var(--border)] flex items-center justify-center text-lg font-black text-[var(--foreground)] shrink-0">
+                      {a.name?.[0] || '?'}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-[var(--foreground)] font-bold truncate">{a.name}</h3>
+                      <p className="text-[var(--primary-500)] text-sm truncate">{a.role} · {a.company}</p>
+                      <p className="text-[var(--primary-500)] text-xs">Class of {a.graduation_year}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(a.expertise || []).map((e) => (
+                      <span key={e} className="px-2 py-0.5 rounded-full text-xs bg-[#14B8A6]/10 text-[#14B8A6] border border-[#14B8A6]/20 font-medium">
+                        {e}
                       </span>
                     ))}
                   </div>
-                </div>
-
-                <div className="p-8 bg-black/5 dark:bg-white/5 rounded-[2rem] border border-[var(--border)]">
-                   <p className="text-[var(--primary-500)] text-sm leading-relaxed font-medium">
-                     "I am passionate about helping UoB graduates find high-impact roles through the Cohort Connect initiative. Feel free to start a consultation if you want career advice or job referrals."
-                   </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <button 
-                    onClick={() => navigate('/messaging')}
-                    className="flex-1 flex items-center justify-center gap-3 py-4 bg-[var(--foreground)] text-[var(--background)] rounded-2xl font-bold text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
-                  >
-                    <MessageSquare size={18}/> Start Consultation
-                  </button>
-                  <button 
-                    onClick={() => handleConnect(null, selectedAlum._id)} 
-                    disabled={connectedIds.has(selectedAlum._id)}
-                    className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-sm transition-all border ${connectedIds.has(selectedAlum._id) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-transparent border-[var(--border)] hover:bg-black/5 dark:hover:bg-white/5'}`}
-                  >
-                    {connectedIds.has(selectedAlum._id) ? <><Check size={18}/> Request Pending</> : <><UserPlus size={18}/> Contact Alumni</>}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
