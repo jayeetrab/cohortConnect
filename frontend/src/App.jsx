@@ -13,6 +13,7 @@ import SettingsPage from './pages/SettingsPage';
 import AlumniDirectory from './pages/AlumniDirectory';
 import JobDetail from './pages/JobDetail';
 import ProtectedRoute from './components/ProtectedRoute';
+import PitchDeck from './pages/PitchDeck';
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -30,6 +31,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<RootRedirect />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/pitch" element={<PitchDeck />} />
           
           <Route path="/student" element={
              <ProtectedRoute allowedRoles={['student', 'alumni']}>
