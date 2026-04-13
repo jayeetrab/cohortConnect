@@ -19,19 +19,21 @@ export default function JobDetail() {
       try {
         setLoading(true);
         const [jobRes, matchRes] = await Promise.all([
-          api.get(`/api/jobs/${id}`), 
+          api.get('/api/jobs'), 
           api.get(`/api/jobs/${id}/analyze`).catch(err => {
             console.error("Analysis failed", err);
             return { data: { status: "error", message: err.response?.data?.detail || "Make sure you uploaded your CV to get an analysis." } };
           })
         ]);
         
-        if (jobRes.data.status === "success") {
-          setJob(jobRes.data.data);
-        } else {
+        const jobsList = jobRes.data.data || [];
+        const foundJob = jobsList.find(j => (j._id || j.id) === id);
+        
+        if (!foundJob) {
           setError("Job not found in database.");
           return;
         }
+        setJob(foundJob);
         
         if (matchRes.data.status === "success") {
           setAnalysis(matchRes.data.analysis);

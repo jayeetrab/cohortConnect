@@ -229,6 +229,7 @@ export default function StudentDashboard() {
             <button onClick={() => navigate('/jobs')} className="text-xs font-black text-[var(--primary-500)] hover:text-[var(--foreground)] uppercase tracking-widest transition-colors">Explorer All</button>
           </div>
           <div className="space-y-4">
+<<<<<<< HEAD
             {(profile && profile.skills ? matchedJobs : jobs.slice(0, 4)).map((job, idx) => (
               <motion.div 
                 whileHover={{ x: 8 }}
@@ -246,6 +247,40 @@ export default function StudentDashboard() {
                   </div>
                   <div className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase tracking-widest ${job.matchScore > 70 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-sky-500/10 text-sky-500'}`}>
                     {job.matchScore > 0 ? `${Math.round(job.matchScore)}% Match` : 'Promoted'}
+=======
+            {profile && profile.skills ? (
+              matchedJobs.length > 0 ? (
+                matchedJobs.map((job, idx) => (
+                  <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate('/jobs')}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-[var(--foreground)]">{job.title}</h4>
+                        <p className="text-xs text-[var(--primary-600)] mt-1">{job.company} • {job.location}</p>
+                      </div>
+                      <div className={`px-2 py-1 text-[10px] font-black rounded uppercase ${job.matchScore > 70 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-sky-500/10 text-sky-500'}`}>
+                        {job.matchScore > 0 ? `${Math.round(job.matchScore)}% Match` : 'New Opening'}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="glass-panel border border-[var(--border)] rounded-2xl p-8 text-center bg-black/5 dark:bg-white/5">
+                  <p className="text-sm font-bold text-[var(--primary-600)]">No exact matches found for your current skills.</p>
+                  <p className="text-xs font-medium text-[var(--primary-500)] mt-2">Upload a broader CV or browse the global board.</p>
+                </div>
+              )
+            ) : (
+              jobs.slice(0, 4).map((job, idx) => (
+                <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate('/jobs')}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-bold text-[var(--foreground)]">{job.title}</h4>
+                      <p className="text-xs text-[var(--primary-600)] mt-1">{job.company} • {job.location}</p>
+                    </div>
+                    <div className="px-2 py-1 text-[10px] font-black rounded uppercase bg-black/5 dark:bg-white/5 text-[var(--primary-600)]">
+                      Pending Profile
+                    </div>
+>>>>>>> parent of 4f710e7 (jj)
                   </div>
                 </div>
               </motion.div>

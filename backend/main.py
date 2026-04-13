@@ -150,16 +150,6 @@ async def get_job_matches(current_user: dict = Depends(get_current_user)):
     matched_jobs.sort(key=lambda x: x.get("matchScore", 0), reverse=True)
     return {"status": "success", "data": matched_jobs}
 
-@app.get("/api/jobs/{job_id}")
-async def get_job_detail(job_id: str):
-    from bson.objectid import ObjectId
-    db = get_db()
-    job = await db.jobs.find_one({"_id": ObjectId(job_id)})
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-    job["_id"] = str(job["_id"])
-    return {"status": "success", "data": job}
-
 @app.get("/api/alumni/matches")
 async def get_alumni_matches(current_user: dict = Depends(get_current_user)):
     db = get_db()
