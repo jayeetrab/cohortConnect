@@ -14,6 +14,7 @@ router = APIRouter(prefix="/api/referrals", tags=["referrals"])
 class DraftRequest(BaseModel):
     student_id: str
     job_id: str
+    alumni_id: Optional[str] = None
 
 
 class ApprovalRequest(BaseModel):
@@ -34,9 +35,9 @@ async def draft_referral(
     payload: DraftRequest,
     current_user: dict = Depends(get_current_user)
 ):
-    """Employer triggers referral drafting for a student + job pair."""
-    if current_user["role"] not in ["employer", "admin"]:
-        raise HTTPException(status_code=403, detail="Only employers can draft referrals.")
+    """Employer or student triggers referral drafting for a student + job pair."""
+    if current_user["role"] not in ["employer", "admin", "student"]:
+        raise HTTPException(status_code=403, detail="Access denied.")
 
     db = get_db()
 
@@ -58,15 +59,24 @@ async def draft_referral(
         raise HTTPException(status_code=404, detail="Job not found.")
     job["_id"] = str(job["_id"])
 
-    # Find best matching alumni
-    best_alumni = await find_best_alumni_for_job(job, db)
-    if not best_alumni:
-        raise HTTPException(
-            status_code=404,
-            detail="No alumni found in the network yet. Add alumni profiles first."
-        )
-
-    top_alumni = best_alumni[0]
+    # Find alumni
+    if payload.alumni_id:
+        try:
+            top_alumni = await db.alumni.find_one({"_id": ObjectId(payload.alumni_id)})
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid alumni ID.")
+        if not top_alumni:
+            raise HTTPException(status_code=404, detail="Selected alumni not found.")
+        top_alumni["_id"] = str(top_alumni["_id"])
+    else:
+        # Fallback to best matching alumni
+        best_alumni = await find_best_alumni_for_job(job, db)
+        if not best_alumni:
+            raise HTTPException(
+                status_code=404,
+                detail="No alumni found in the network yet. Add alumni profiles first."
+            )
+        top_alumni = best_alumni[0]
 
     # Draft the email
     drafted_email = await draft_referral_email(student, top_alumni, job)
@@ -79,7 +89,7 @@ async def draft_referral(
         "job_id": payload.job_id,
         "job_title": job.get("title"),
         "company": job.get("company"),
-        "alumni_id": top_alumni.get("_id"),
+        "alumni_id": str(top_alumni.get("_id")),
         "alumni_name": top_alumni.get("name"),
         "alumni_email": top_alumni.get("email", ""),
         "alumni_role": top_alumni.get("role"),
@@ -87,7 +97,8 @@ async def draft_referral(
         "drafted_email": drafted_email,
         "status": "pending",
         "created_at": datetime.utcnow(),
-        "employer_email": current_user["email"]
+        "employer_email": current_user["email"] if current_user["role"] == "employer" else None,
+        "initiated_by": current_user["role"]
     }
     result = await db.referrals.insert_one(referral_record)
     referral_id = str(result.inserted_id)
@@ -96,7 +107,7 @@ async def draft_referral(
         "referral_id": referral_id,
         "student_id": payload.student_id,
         "job_id": payload.job_id,
-        "alumni_id": top_alumni.get("_id"),
+        "alumni_id": str(top_alumni.get("_id")),
         "employer": current_user["email"]
     })
 
@@ -117,8 +128,7 @@ async def draft_referral(
             "name": top_alumni.get("name"),
             "role": top_alumni.get("role"),
             "company": top_alumni.get("company"),
-            "relevance_score": top_alumni.get("relevance_score"),
-            "other_options": best_alumni[1:] if len(best_alumni) > 1 else []
+            "relevance_score": top_alumni.get("relevance_score", 0)
         },
         "drafted_email": drafted_email
     }

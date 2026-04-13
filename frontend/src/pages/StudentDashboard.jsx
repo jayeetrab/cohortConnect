@@ -9,6 +9,7 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import JobDetailModal from '../components/JobDetailModal';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export default function StudentDashboard() {
   const [jobs, setJobs] = useState([]);
   const [alumni, setAlumni] = useState([]);
   const [message, setMessage] = useState(null);
+  const [selectedJob, setSelectedJob] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -84,6 +86,15 @@ export default function StudentDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-16 pb-20">
+      
+      <AnimatePresence>
+        {selectedJob && (
+          <JobDetailModal 
+            jobId={selectedJob} 
+            onClose={() => setSelectedJob(null)} 
+          />
+        )}
+      </AnimatePresence>
       
       {/* 1. MENTOR HERO SECTION */}
       <motion.section 
@@ -247,7 +258,11 @@ export default function StudentDashboard() {
           </div>
           <div className="space-y-4">
             {matchedJobs.map((job, idx) => (
-              <div key={idx} className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" onClick={() => navigate('/jobs')}>
+              <div 
+                key={idx} 
+                className="glass-panel border border-[var(--border)] rounded-2xl p-6 hover:translate-x-1 transition-transform cursor-pointer" 
+                onClick={() => setSelectedJob(job._id || job.id)}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-bold text-[var(--foreground)]">{job.title}</h4>

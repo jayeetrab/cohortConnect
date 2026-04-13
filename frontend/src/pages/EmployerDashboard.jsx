@@ -112,7 +112,7 @@ const ReferralModal = ({ data, onClose }) => {
   );
 };
 
-const CandidateCard = ({ candidate, rank, onDraftReferral, drafting }) => {
+const CandidateCard = ({ candidate, rank, onDraftReferral, drafting, blindMode }) => {
   const [expanded, setExpanded] = useState(false);
   const score = candidate.match || 0;
   const scoreColor = score >= 80 ? 'text-emerald-400' : score >= 60 ? 'text-[#F97316]' : 'text-[var(--primary-500)]';
@@ -129,7 +129,11 @@ const CandidateCard = ({ candidate, rank, onDraftReferral, drafting }) => {
         {/* Avatar */}
         <div className="relative shrink-0">
           <div className="w-14 h-14 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center text-xl font-black text-[var(--foreground)]">
-            {candidate.name?.charAt(0) || '?'}
+            {blindMode ? (
+              <Shield size={24} className="text-[var(--primary-500)]" />
+            ) : (
+              candidate.name?.charAt(0) || '?'
+            )}
           </div>
           <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-[10px] font-black text-[var(--primary-500)]">
             {rank}
@@ -142,7 +146,7 @@ const CandidateCard = ({ candidate, rank, onDraftReferral, drafting }) => {
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
             <div>
               <h4 className="font-black text-lg text-[var(--foreground)] group-hover:text-[#F97316] transition-colors leading-tight">
-                {candidate.name}
+                {blindMode ? `Candidate #${candidate.id?.slice(-4) || 'XXXX'}` : candidate.name}
               </h4>
               <p className="text-sm font-semibold text-[var(--primary-500)]">
                 {candidate.topSkill || 'Specialist'} · University of Bristol
@@ -228,6 +232,7 @@ export default function EmployerDashboard() {
   const [referralData, setReferralData] = useState(null);
   const [draftingFor, setDraftingFor] = useState(null);
   const [selectedJob, setSelectedJob] = useState('');
+  const [blindMode, setBlindMode] = useState(false);
 
   useEffect(() => {
     api.get('/api/jobs').then((r) => {
@@ -302,21 +307,46 @@ export default function EmployerDashboard() {
         </p>
       </motion.div>
 
-      {/* Job selector for referral */}
-      {jobs.length > 0 && (
-        <div className="flex items-center gap-3">
-          <span className="text-xs uppercase tracking-wider text-[var(--primary-500)] font-bold shrink-0">Referral for role:</span>
-          <select
-            value={selectedJob}
-            onChange={(e) => setSelectedJob(e.target.value)}
-            className="bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[#F97316]/50 transition-colors"
-          >
-            {jobs.map((j) => (
-              <option key={j._id} value={j._id}>{j.title} · {j.company}</option>
-            ))}
-          </select>
-        </div>
-      )}
+      {/* Tool bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+        {/* Job selector for referral */}
+        {jobs.length > 0 && (
+          <div className="flex items-center gap-3">
+            <span className="text-xs uppercase tracking-wider text-[var(--primary-500)] font-bold shrink-0">Context:</span>
+            <select
+              value={selectedJob}
+              onChange={(e) => setSelectedJob(e.target.value)}
+              className="bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-[#F97316]/50 transition-colors"
+            >
+              <option value="">Select job…</option>
+              {jobs.map((j) => (
+                <option key={j._id} value={j._id}>{j.title} · {j.company}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Blind mode toggle */}
+        <button
+          onClick={() => setBlindMode(!blindMode)}
+          className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${
+            blindMode 
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-bold' 
+              : 'bg-black/5 border-[var(--border)] text-[var(--primary-500)]'
+          }`}
+        >
+          <Shield size={16} className={blindMode ? 'text-emerald-400' : 'text-[var(--primary-500)]'} />
+          <span className="text-xs uppercase tracking-widest">
+            Blind Hiring: {blindMode ? 'ON' : 'OFF'}
+          </span>
+          <div className={`w-8 h-4 rounded-full relative transition-colors ${blindMode ? 'bg-emerald-500' : 'bg-gray-600'}`}>
+            <motion.div 
+              animate={{ x: blindMode ? 16 : 2 }}
+              className="absolute top-1 w-2 h-2 bg-white rounded-full shadow-sm"
+            />
+          </div>
+        </button>
+      </div>
 
       {/* Search box */}
       <form onSubmit={handleSearch} className="space-y-4">
@@ -394,6 +424,7 @@ export default function EmployerDashboard() {
                   key={candidate.id}
                   candidate={candidate}
                   rank={idx + 1}
+                  blindMode={blindMode}
                   onDraftReferral={() => handleDraftReferral(candidate)}
                   drafting={draftingFor === candidate.id}
                 />

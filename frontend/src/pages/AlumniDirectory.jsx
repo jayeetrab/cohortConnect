@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Users, Search, Star } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Search, Star, MessageSquare, ChevronRight, X, Briefcase } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,6 +14,11 @@ export default function AlumniDirectory() {
   const [actioning, setActioning] = useState(null);
   const [editEmails, setEditEmails] = useState({});
   const [actionedIds, setActionedIds] = useState(new Set());
+  const [selectedAlumni, setSelectedAlumni] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [selectedJobId, setSelectedJobId] = useState('');
+  const [requesting, setRequesting] = useState(false);
+  const [requestSuccess, setRequestSuccess] = useState('');
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -29,6 +34,10 @@ export default function AlumniDirectory() {
         const emails = {};
         refs.forEach((r) => { emails[r._id] = r.drafted_email || ''; });
         setEditEmails(emails);
+      }
+      if (user?.role === 'student' || user?.role === 'admin') {
+        const jobsRes = await api.get('/api/jobs');
+        setJobs(jobsRes.data.data || []);
       }
     } catch (e) {
       console.error(e);
@@ -53,6 +62,30 @@ export default function AlumniDirectory() {
       console.error(e);
     } finally {
       setActioning(null);
+    }
+  };
+
+  const handleRequestReferral = async () => {
+    if (!selectedAlumni || !selectedJobId) return;
+    setRequesting(true);
+    setRequestSuccess('');
+    try {
+      const res = await api.post('/api/referrals/draft', {
+        student_id: user.id || user._id,
+        job_id: selectedJobId,
+        alumni_id: selectedAlumni._id,
+      });
+      if (res.data.status === 'success') {
+        setRequestSuccess('Referral request sent to alumni!');
+        setTimeout(() => {
+          setSelectedAlumni(null);
+          setRequestSuccess('');
+        }, 2500);
+      }
+    } catch (e) {
+      setRequestSuccess('Error: ' + (e.response?.data?.detail || 'Request failed.'));
+    } finally {
+      setRequesting(false);
     }
   };
 
@@ -216,7 +249,7 @@ export default function AlumniDirectory() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.04 }}
-                  className="glass-panel border border-[var(--border)] hover:border-[var(--primary-500)]/30 rounded-2xl p-5 transition-all duration-300"
+                  className="glass-panel border border-[var(--border)] hover:border-[var(--primary-500)]/30 rounded-2xl p-5 transition-all duration-300 flex flex-col h-full"
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F97316]/20 to-[#14B8A6]/10 border border-[var(--border)] flex items-center justify-center text-lg font-black text-[var(--foreground)] shrink-0">
@@ -228,19 +261,96 @@ export default function AlumniDirectory() {
                       <p className="text-[var(--primary-500)] text-xs">Class of {a.graduation_year}</p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5 flex-1">
                     {(a.expertise || []).map((e) => (
                       <span key={e} className="px-2 py-0.5 rounded-full text-xs bg-[#14B8A6]/10 text-[#14B8A6] border border-[#14B8A6]/20 font-medium">
                         {e}
                       </span>
                     ))}
                   </div>
+                  {user?.role === 'student' && (
+                    <button
+                      onClick={() => setSelectedAlumni(a)}
+                      className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[#F97316]/30 text-[#F97316] font-bold text-xs hover:bg-[#F97316]/10 transition-all"
+                    >
+                      <MessageSquare size={14} /> Request Referral
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </div>
           )}
         </div>
       )}
+
+      {/* Referral request modal for students */}
+      <AnimatePresence>
+        {selectedAlumni && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => e.target === e.currentTarget && setSelectedAlumni(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="w-full max-w-md glass-panel border border-[var(--border)] rounded-[2rem] p-8 shadow-2xl space-y-6"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-[var(--foreground)] font-black text-xl">Request Referral</h2>
+                  <p className="text-[var(--primary-500)] text-sm">To: {selectedAlumni.name}</p>
+                </div>
+                <button onClick={() => setSelectedAlumni(null)} className="p-2 rounded-xl hover:bg-white/5 text-[var(--primary-500)]">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {requestSuccess ? (
+                <div className={`p-4 rounded-xl text-center font-bold text-sm ${requestSuccess.includes('Error') ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                  {requestSuccess}
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-widest text-[var(--primary-500)] font-black flex items-center gap-2">
+                      <Briefcase size={14} /> Select Target Job
+                    </label>
+                    <select
+                      value={selectedJobId}
+                      onChange={(e) => setSelectedJobId(e.target.value)}
+                      className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[#F97316]/50 transition-colors"
+                    >
+                      <option value="">Select a job from the cohort…</option>
+                      {jobs.map((j) => (
+                        <option key={j._id} value={j._id}>{j.title} @ {j.company}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <p className="text-[var(--primary-500)] text-xs leading-relaxed italic">
+                    The platform will identify your best projects and skills to draft a high-impact referral request for {selectedAlumni.name?.split(' ')[0]}.
+                  </p>
+
+                  <button
+                    onClick={handleRequestReferral}
+                    disabled={requesting || !selectedJobId}
+                    className="w-full py-4 rounded-2xl bg-[#F97316] hover:bg-[#ea6c0a] text-white font-black text-sm transition-all shadow-lg shadow-[#F97316]/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {requesting ? (
+                      <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Drafting...</>
+                    ) : (
+                      <>Send Request <ChevronRight size={18} /></>
+                    )}
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

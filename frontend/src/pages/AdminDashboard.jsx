@@ -64,7 +64,11 @@ export default function AdminDashboard() {
   const [outcomeForm, setOutcomeForm] = useState({ student_id: '', outcome: 'placed', employer: '', job_title: '' });
   const [outcomeMsg, setOutcomeMsg] = useState('');
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { 
+    fetchAll(); 
+    const interval = setInterval(fetchAll, 30000); // 30s polling
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -116,6 +120,10 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-3 mb-1">
           <ShieldAlert size={20} className="text-[#F97316]" />
           <p className="text-xs uppercase tracking-widest text-[var(--primary-500)]">Admin Control Centre</p>
+          <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Engine</span>
+          </div>
         </div>
         <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight">University Dashboard</h1>
         <p className="text-[var(--primary-500)] text-sm mt-1">Bristol pilot cohort · Live analytics and outcome tracking</p>
@@ -209,12 +217,12 @@ export default function AdminDashboard() {
           className="glass-panel border border-[var(--border)] rounded-2xl p-6 space-y-4"
         >
           <h2 className="text-[var(--foreground)] font-black flex items-center gap-2">
-            <Server size={16} className="text-[#14B8A6]" /> Recent Activity
+            <Server size={16} className="text-[#14B8A6]" /> Live Activity Feed
           </h2>
           {recent.length === 0 ? (
-            <p className="text-[var(--primary-500)] text-sm">No activity yet.</p>
+            <p className="text-[var(--primary-500)] text-sm italic">Waiting for events...</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
               {recent.map((ev, i) => {
                 const icons = {
                   cv_upload: { icon: '📄', color: 'text-[#14B8A6]' },
