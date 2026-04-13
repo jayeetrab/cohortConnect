@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Search, Plus, Send, MoreVertical, Paperclip, 
+  Smile, Trash2, Check, CheckCheck, User, 
+  MessageSquare, X, Briefcase, Sparkles
+} from "lucide-react";
 import api from "../api/client";
+import { useAuth } from "../context/AuthContext";
 
 export default function MessagingPage() {
+  const { user: currentUser } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -143,377 +151,327 @@ export default function MessagingPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-950 text-white overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-80 border-r border-gray-800 flex flex-col bg-gray-900">
+    <div className="flex h-[calc(100vh-10rem)] bg-transparent overflow-hidden gap-4">
+      {/* Sidebar - Conversations */}
+      <div className="w-80 flex flex-col glass-panel border border-[var(--border)] rounded-[2rem] overflow-hidden shadow-xl">
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-800">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-white">Messages</h2>
+        <div className="p-6 border-b border-[var(--border)] bg-white/5 backdrop-blur-md">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-black text-[var(--foreground)] tracking-tight">Inbox</h2>
             <button
               onClick={openNewConvoModal}
-              className="p-2 rounded-lg bg-orange-500 hover:bg-orange-600 transition-colors"
-              title="New conversation"
+              className="p-2.5 rounded-xl bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-all shadow-lg active:scale-95"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
+              <Plus size={18} strokeWidth={3} />
             </button>
           </div>
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
-          />
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-xs text-[var(--foreground)] outline-none focus:border-[var(--primary-500)]/30 transition-all"
+            />
+          </div>
         </div>
 
         {/* Conversation List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500" />
+            <div className="flex items-center justify-center h-40">
+              <div className="w-6 h-6 border-2 border-[var(--border)] border-t-[var(--primary-500)] rounded-full animate-spin" />
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-6 text-center text-gray-500 text-sm">
-              <svg
-                className="w-10 h-10 mx-auto mb-3 opacity-40"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-              No conversations yet.
-              <br />
-              Start one with the + button.
+            <div className="flex flex-col items-center justify-center p-8 text-center text-[var(--primary-500)] h-full opacity-60">
+              <MessageSquare size={32} className="mb-2 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">No chats active</p>
             </div>
           ) : (
-            filteredConversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => setActiveConversation(conv)}
-                className={`w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-800 transition-colors border-b border-gray-800/50 text-left ${
-                  activeConversation?.id === conv.id ? "bg-gray-800" : ""
-                }`}
-              >
-                {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-orange-400 font-semibold text-sm">
-                    {conv.other_user_name?.charAt(0).toUpperCase() || "?"}
-                  </span>
-                </div>
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-white truncate">
-                      {conv.other_user_name}
-                    </span>
-                    <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                      {formatTime(conv.last_message_at)}
+            <div className="p-2 space-y-1">
+              {filteredConversations.map((conv) => (
+                <button
+                  key={conv.id}
+                  onClick={() => setActiveConversation(conv)}
+                  className={`w-full group p-4 rounded-2xl flex items-start gap-4 transition-all duration-300 relative ${
+                    activeConversation?.id === conv.id 
+                      ? "bg-white/10 shadow-lg border border-white/10" 
+                      : "hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  {activeConversation?.id === conv.id && (
+                    <motion.div layoutId="active-tab" className="absolute left-2 top-4 bottom-4 w-1 bg-emerald-500 rounded-full" />
+                  )}
+                  {/* Avatar */}
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-sky-500/10 border border-emerald-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <span className="text-emerald-500 font-black text-sm">
+                      {conv.other_user_name?.charAt(0).toUpperCase() || "?"}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 truncate mt-0.5">
-                    {conv.last_message || "No messages yet"}
-                  </p>
-                  {conv.unread_count > 0 && (
-                    <span className="inline-flex items-center justify-center mt-1 px-1.5 py-0.5 rounded-full text-xs bg-orange-500 text-white font-medium">
-                      {conv.unread_count}
-                    </span>
-                  )}
-                </div>
-              </button>
-            ))
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="font-bold text-sm text-[var(--foreground)] truncate">
+                        {conv.other_user_name}
+                      </span>
+                      <span className="text-[10px] text-[var(--primary-500)] font-medium">
+                        {formatTime(conv.last_message_at)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--primary-500)] truncate pr-4">
+                      {conv.last_message || "Start a conversation"}
+                    </p>
+                    {conv.unread_count > 0 && (
+                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
           )}
         </div>
       </div>
 
       {/* Main Chat Area */}
-      {activeConversation ? (
-        <div className="flex-1 flex flex-col">
-          {/* Chat Header */}
-          <div className="px-6 py-4 border-b border-gray-800 bg-gray-900 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
-              <span className="text-orange-400 font-semibold text-sm">
-                {activeConversation.other_user_name?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-white text-sm">
-                {activeConversation.other_user_name}
-              </h3>
-              <p className="text-xs text-gray-500 capitalize">
-                {activeConversation.other_user_role || "User"}
-              </p>
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm">
-                <svg
-                  className="w-12 h-12 mb-3 opacity-30"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
-                </svg>
-                Say hello to start the conversation!
+      <div className="flex-1 flex flex-col glass-panel border border-[var(--border)] rounded-[2rem] overflow-hidden shadow-2xl bg-white/[0.02] backdrop-blur-xl">
+        {activeConversation ? (
+          <>
+            {/* Chat Header */}
+            <header className="px-8 py-6 border-b border-[var(--border)] bg-white/5 backdrop-blur-md flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-sky-500/10 border border-emerald-500/10 flex items-center justify-center">
+                  <span className="text-emerald-500 font-black text-sm">
+                    {activeConversation.other_user_name?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-black text-[var(--foreground)] tracking-tight">
+                    {activeConversation.other_user_name}
+                  </h3>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <p className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">
+                      {activeConversation.other_user_role || "Candidate"}
+                    </p>
+                  </div>
+                </div>
               </div>
-            ) : (
-              messages.map((msg) => (
-                <MessageBubble
-                  key={msg.id}
-                  message={msg}
-                  formatTime={formatTime}
-                />
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+              <div className="flex items-center gap-2">
+                <button className="p-2 rounded-xl border border-[var(--border)] hover:bg-white/5 text-[var(--primary-500)] transition-all">
+                  <MoreVertical size={18} />
+                </button>
+              </div>
+            </header>
 
-          {/* Input */}
-          <div className="px-6 py-4 border-t border-gray-800 bg-gray-900">
-            <div className="flex items-end gap-3">
-              <textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
-                rows={1}
-                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 resize-none max-h-32 overflow-y-auto"
-                style={{ minHeight: "44px" }}
-              />
-              <button
-                onClick={sendMessage}
-                disabled={!newMessage.trim() || sending}
-                className="p-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-colors flex-shrink-0"
-              >
-                {sending ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* Empty State */
-        <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-500">
-          <svg
-            className="w-16 h-16 mb-4 opacity-20"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-          <p className="text-lg font-medium text-gray-400">
-            Select a conversation
-          </p>
-          <p className="text-sm mt-1">
-            Or start a new one using the             + button above
-          </p>
-        </div>
-      )}
-
-      {/* New Conversation Modal */}
-      {newConvoModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-semibold text-white">
-                New Conversation
-              </h3>
-              <button
-                onClick={() => {
-                  setNewConvoModal(false);
-                  setSelectedUser(null);
-                }}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-400 mb-4">
-              Select a user to start a conversation with:
-            </p>
-
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-              {users.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-6">
-                  No users available
-                </p>
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6 custom-scrollbar bg-transparent">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-[var(--primary-500)] space-y-3 opacity-40">
+                  <Sparkles size={40} className="text-[var(--primary-500)]" />
+                  <p className="text-xs font-black uppercase tracking-widest text-center">Conversation Initialized.<br/>Start the bridge.</p>
+                </div>
               ) : (
-                users.map((user) => (
-                  <button
-                    key={user.id}
-                    onClick={() => setSelectedUser(user)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors text-left ${
-                      selectedUser?.id === user.id
-                        ? "border-orange-500 bg-orange-500/10"
-                        : "border-gray-700 hover:border-gray-600 bg-gray-800"
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-orange-400 font-semibold text-sm">
-                        {user.full_name?.charAt(0).toUpperCase() || "?"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white">
-                        {user.full_name}
-                      </p>
-                      <p className="text-xs text-gray-400 capitalize">
-                        {user.role}
-                      </p>
-                    </div>
-                    {selectedUser?.id === user.id && (
-                      <svg
-                        className="w-4 h-4 text-orange-400 ml-auto"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                ))
+                <div className="space-y-6">
+                  {messages.map((msg, idx) => (
+                    <MessageBubble
+                      key={msg.id}
+                      message={msg}
+                      formatTime={formatTime}
+                      showAvatar={idx === 0 || messages[idx-1].sender_id !== msg.sender_id}
+                    />
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
               )}
             </div>
 
-            <div className="flex gap-3 mt-5">
-              <button
-                onClick={() => {
-                  setNewConvoModal(false);
-                  setSelectedUser(null);
-                }}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={startNewConversation}
-                disabled={!selectedUser}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium transition-colors text-sm"
-              >
-                Start Chat
-              </button>
+            {/* Input Bar */}
+            <footer className="p-6 bg-white/5 backdrop-blur-md border-t border-[var(--border)]">
+              <div className="max-w-4xl mx-auto flex items-end gap-3 glass-panel border border-white/10 rounded-[1.5rem] p-2 pr-3 focus-within:border-emerald-500/30 transition-all shadow-inner">
+                <button className="p-3 text-[var(--primary-500)] hover:text-emerald-500 transition-colors">
+                  <Paperclip size={18} />
+                </button>
+                <textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Draft your response..."
+                  rows={1}
+                  className="flex-1 px-2 py-3 bg-transparent text-sm text-[var(--foreground)] placeholder-[var(--primary-500)] outline-none resize-none max-h-32 custom-scrollbar font-medium"
+                  style={{ minHeight: "24px" }}
+                />
+                <button className="p-3 text-[var(--primary-500)] hover:text-emerald-500 transition-colors">
+                  <Smile size={18} />
+                </button>
+                <button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim() || sending}
+                  className="w-11 h-11 flex items-center justify-center bg-emerald-500 text-white rounded-2xl shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100"
+                >
+                  {sending ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Send size={18} strokeWidth={2.5} />
+                  )}
+                </button>
+              </div>
+            </footer>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-6">
+            <div className="w-24 h-24 rounded-[2rem] bg-black/5 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center text-[var(--primary-500)] shadow-inner">
+              <MessageSquare size={40} className="opacity-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight flex items-center justify-center gap-3">
+                Select a Bridge
+              </h3>
+              <p className="text-[var(--primary-500)] max-w-xs text-sm font-medium leading-relaxed">
+                Choose a conversation from the sidebar to start collaborating with the network.
+              </p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* New Conversation Modal */}
+      <AnimatePresence>
+        {newConvoModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[100] p-4"
+            onClick={(e) => e.target === e.currentTarget && setNewConvoModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              className="bg-[var(--background)] glass-panel border border-[var(--border)] rounded-[2.5rem] p-10 w-full max-w-md shadow-[0_32px_120px_rgba(0,0,0,0.5)] relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-10 -mr-16 -mt-16 opacity-10 blur-3xl bg-emerald-500 w-40 h-40 rounded-full" />
+              
+              <div className="flex items-center justify-between mb-8 relative z-10">
+                <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">New Bridge</h3>
+                <button
+                  onClick={() => {
+                    setNewConvoModal(false);
+                    setSelectedUser(null);
+                  }}
+                  className="p-2 rounded-xl hover:bg-white/5 text-[var(--primary-500)] transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="relative mb-6 z-10">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--primary-500)]" />
+                <input
+                  type="text"
+                  placeholder="Find colleague or student..."
+                  className="w-full pl-9 pr-4 py-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-sm text-[var(--foreground)] outline-none focus:border-emerald-500/30 transition-all font-medium"
+                />
+              </div>
+
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-2 custom-scrollbar relative z-10">
+                {users.length === 0 ? (
+                  <div className="text-center py-10 opacity-30 text-xs font-black uppercase tracking-widest">
+                    Searching Network...
+                  </div>
+                ) : (
+                  users.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => setSelectedUser(user)}
+                      className={`w-full group flex items-center gap-4 px-4 py-4 rounded-2xl border transition-all duration-300 text-left ${
+                        selectedUser?.id === user.id
+                          ? "border-emerald-500/50 bg-emerald-500/10 shadow-lg shadow-emerald-500/10"
+                          : "border-transparent hover:bg-white/5 bg-transparent"
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-sky-500/10 border border-emerald-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <span className="text-emerald-500 font-black text-sm uppercase">
+                          {user.full_name?.charAt(0) || "?"}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black text-[var(--foreground)] truncate">
+                          {user.full_name}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="w-1 h-1 rounded-full bg-emerald-500/50" />
+                          <p className="text-[10px] text-[var(--primary-500)] uppercase font-black tracking-widest">
+                            {user.role}
+                          </p>
+                        </div>
+                      </div>
+                      {selectedUser?.id === user.id && (
+                        <div className="w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center">
+                          <Check size={12} strokeWidth={4} />
+                        </div>
+                      )}
+                    </button>
+                  ))
+                )}
+              </div>
+
+              <div className="flex gap-4 mt-10 relative z-10">
+                <button
+                  onClick={startNewConversation}
+                  disabled={!selectedUser}
+                  className="flex-1 py-4 rounded-3xl bg-[var(--foreground)] text-[var(--background)] font-black text-sm transition-all shadow-xl hover:opacity-90 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+                >
+                  Start Conversation
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
+// ─── Message Bubble Component ───────────────────────────────────────────────
 
-// ─── Message Bubble Sub-component ───────────────────────────────────────────
-
-function MessageBubble({ message, formatTime }) {
+function MessageBubble({ message, formatTime, showAvatar }) {
   const isOwn = message.is_own;
 
   return (
-    <div
-      className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      className={`flex items-end gap-3 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
     >
-      {/* Avatar (only for other user) */}
-      {!isOwn && (
-        <div className="w-7 h-7 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0 mb-1">
-          <span className="text-orange-400 font-semibold text-xs">
-            {message.sender_name?.charAt(0).toUpperCase() || "?"}
-          </span>
-        </div>
-      )}
+      <div className={`w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500/20 to-sky-500/10 border border-emerald-500/10 flex items-center justify-center flex-shrink-0 mb-1 transition-opacity ${showAvatar ? "opacity-100" : "opacity-0 invisible h-0"}`}>
+        <span className="text-emerald-500 font-black text-[10px]">
+          {message.sender_name?.charAt(0).toUpperCase() || <User size={12}/>}
+        </span>
+      </div>
 
-      {/* Bubble */}
-      <div
-        className={`max-w-[70%] group relative ${isOwn ? "items-end" : "items-start"} flex flex-col`}
-      >
+      <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"} max-w-[75%] group`}>
         <div
-          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+          className={`px-5 py-3 rounded-[1.5rem] text-[13px] leading-relaxed shadow-sm transition-all duration-300 relative ${
             isOwn
-              ? "bg-orange-500 text-white rounded-br-md"
-              : "bg-gray-800 text-gray-100 rounded-bl-md border border-gray-700"
+              ? "bg-emerald-500 text-white rounded-br-none shadow-emerald-500/10 hover:shadow-emerald-500/20"
+              : "bg-white/[0.05] text-[var(--foreground)] border border-white/10 rounded-bl-none hover:bg-white/[0.08]"
           }`}
         >
           {message.content}
         </div>
-        <span
-          className={`text-xs text-gray-600 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity ${
-            isOwn ? "text-right" : "text-left"
-          }`}
-        >
-          {formatTime(message.created_at)}
+        <div className={`flex items-center gap-1.5 mt-1.5 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+          <span className="text-[10px] font-bold text-[var(--primary-600)] uppercase">
+            {formatTime(message.created_at)}
+          </span>
           {isOwn && (
-            <span className="ml-1">
-              {message.is_read ? (
-                <span className="text-orange-400">✓✓</span>
-              ) : (
-                <span className="text-gray-600">✓</span>
-              )}
-            </span>
+            <div className="text-emerald-500">
+               {message.is_read ? <CheckCheck size={12} strokeWidth={3}/> : <Check size={12} strokeWidth={3}/>}
+            </div>
           )}
-        </span>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

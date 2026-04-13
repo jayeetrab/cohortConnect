@@ -1,7 +1,7 @@
 import os
-import certifi
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from database import get_db, init_db
 from auth import router as auth_router, get_current_user
 from routers.users import router as users_router
@@ -14,15 +14,7 @@ from agents.referral_agent import analyze_job_fit
 from agents.analytics import track_event, get_analytics_summary
 from core.config import settings
 from bson import ObjectId
-from routers.messages import router as messages_router, Conversation, Message
-
-app = FastAPI(
-    title="Cohort Connect API",
-    description="AI-powered placement intelligence platform — University of Bristol",
-    version="2.0.0"
-)
-
-from contextlib import asynccontextmanager
+from routers.messages import router as messages_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,13 +23,12 @@ async def lifespan(app: FastAPI):
     if settings.GOOGLE_API_KEY:
         os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY
     yield
-    # Shutdown (if needed)
 
 app = FastAPI(
     title="Cohort Connect API",
     description="AI-powered placement intelligence platform — University of Bristol",
     version="2.0.0",
-    lifespan=lifespan  # ← ADD THIS
+    lifespan=lifespan
 )
 
 # ── CORS ─────────────────────────────────────────────────────────────────────
@@ -111,7 +102,7 @@ async def get_students(current_user: dict = Depends(get_current_user)):
     students = await db.students.find().to_list(100)
     for s in students:
         s["_id"] = str(s["_id"])
-        s.pop("raw_text", None)  # don't send full CV text in list view
+        s.pop("raw_text", None)
     return {"status": "success", "data": students}
 
 @app.post("/api/upload-cv")
@@ -182,7 +173,6 @@ async def get_job_matches(current_user: dict = Depends(get_current_user)):
         j["_id"] = str(j["_id"])
 
     if not student.get("skills"):
-        # No skills yet — return all jobs unranked
         return {"status": "success", "data": jobs_cursor, "ranked": False}
 
     matched = await match_student_to_jobs(student, jobs_cursor)

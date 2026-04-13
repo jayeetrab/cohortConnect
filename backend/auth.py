@@ -92,7 +92,8 @@ async def register(user: UserCreate):
         "token_type": "bearer",
         "role": user.role.value,
         "name": user.name,
-        "email": user.email
+        "email": user.email,
+        "id": str(user_dict.get("_id")) if "_id" in user_dict else None
     }
 
 @router.post("/login")
@@ -108,7 +109,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         "token_type": "bearer",
         "role": user["role"],
         "name": user["name"],
-        "email": user["email"]
+        "email": user["email"],
+        "id": str(user["_id"])
     }
 
 @router.put("/password")
@@ -128,6 +130,7 @@ async def update_password(payload: PasswordChangeRequest, current_user: dict = D
 @router.get("/me")
 async def read_users_me(current_user: dict = Depends(get_current_user)):
     return {
+        "id": str(current_user["_id"]),
         "email": current_user["email"],
         "role": current_user["role"],
         "name": current_user["name"]

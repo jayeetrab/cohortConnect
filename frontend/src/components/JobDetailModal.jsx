@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Briefcase, Target, Zap, ChevronRight, 
-  AlertCircle, BookOpen, BrainCircuit, Star, ArrowRight
+  AlertCircle, BookOpen, BrainCircuit, Star, ArrowRight, Activity
 } from 'lucide-react';
 import api from '../api/client';
 
@@ -12,14 +12,20 @@ export default function JobDetailModal({ jobId, onClose }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!jobId) return;
+    if (!jobId || jobId === 'undefined') {
+        setError('Invalid Job ID. Please try another opportunity.');
+        setLoading(false);
+        return;
+    }
     const fetchAnalysis = async () => {
       setLoading(true);
+      setError('');
       try {
         const res = await api.get(`/api/jobs/${jobId}/analyze`);
         setData(res.data);
       } catch (err) {
-        setError(err.response?.data?.detail || 'Could not analyze job fit.');
+        console.error("Analysis error:", err);
+        setError(err.response?.data?.detail || 'This job is currently being indexed for analysis. Please check back in a few minutes.');
       } finally {
         setLoading(false);
       }
@@ -58,8 +64,13 @@ export default function JobDetailModal({ jobId, onClose }) {
         ) : error ? (
           <div className="py-20 text-center space-y-4">
             <AlertCircle size={48} className="mx-auto text-red-500/50" />
-            <p className="text-[var(--foreground)] font-bold">{error}</p>
-            <button onClick={onClose} className="px-6 py-2 bg-[var(--border)] rounded-xl text-sm font-bold">Close</button>
+            <p className="text-[var(--foreground)] font-bold px-6">{error}</p>
+            <button 
+                onClick={onClose} 
+                className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-2xl text-sm font-bold hover:opacity-90 transition-all"
+            >
+                Close Engine
+            </button>
           </div>
         ) : (
           <div className="space-y-8">

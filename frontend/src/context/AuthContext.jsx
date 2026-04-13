@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
       api.get('/api/auth/me')
         .then(res => {
           if (res.data.email) {
-            setUser({ ...res.data, token });
+            setUser({ ...res.data, id: res.data.id || res.data._id, token });
           } else {
             localStorage.removeItem('cc_token');
           }
@@ -28,6 +28,7 @@ export function AuthProvider({ children }) {
   const loginUser = (data) => {
     localStorage.setItem('cc_token', data.access_token);
     setUser({
+      id: data.id || data._id,
       email: data.email,
       name: data.name,
       role: data.role,

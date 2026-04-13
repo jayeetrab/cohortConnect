@@ -71,7 +71,7 @@ export default function AlumniDirectory() {
     setRequestSuccess('');
     try {
       const res = await api.post('/api/referrals/draft', {
-        student_id: user.id || user._id,
+        student_id: user.id,
         job_id: selectedJobId,
         alumni_id: selectedAlumni._id,
       });
@@ -323,9 +323,9 @@ export default function AlumniDirectory() {
                       onChange={(e) => setSelectedJobId(e.target.value)}
                       className="w-full bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[#F97316]/50 transition-colors"
                     >
-                      <option value="">Select a job from the cohort…</option>
-                      {jobs.map((j) => (
-                        <option key={j._id} value={j._id}>{j.title} @ {j.company}</option>
+                      <option value="">Select a job from {selectedAlumni.company}…</option>
+                      {jobs.filter(j => j.company === selectedAlumni.company).map((j) => (
+                        <option key={j._id} value={j._id}>{j.title}</option>
                       ))}
                     </select>
                   </div>
