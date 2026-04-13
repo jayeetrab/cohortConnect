@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, Plus, Send, MoreVertical, Paperclip, 
-  Smile, Trash2, Check, CheckCheck, User, 
+import {
+  Search, Plus, Send, MoreVertical, Paperclip,
+  Smile, Trash2, Check, CheckCheck, User,
   MessageSquare, X, Briefcase, Sparkles,
   ArrowLeft, Info, Phone, Video, Zap
 } from "lucide-react";
@@ -125,7 +125,7 @@ export default function MessagingPage() {
     setNewConvoModal(true);
   };
 
-  const filteredConversations = useMemo(() => 
+  const filteredConversations = useMemo(() =>
     conversations.filter((c) =>
       c.other_user_name?.toLowerCase().includes(searchQuery.toLowerCase())
     ), [conversations, searchQuery]
@@ -155,13 +155,13 @@ export default function MessagingPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] bg-transparent overflow-hidden gap-6 relative">
-      
+
       {/* ── Background Decors ── */}
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-sky-500/10 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Sidebar - Conversations */}
-      <motion.div 
+      <motion.div
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         className="w-80 flex flex-col glass-panel border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10"
@@ -170,7 +170,7 @@ export default function MessagingPage() {
         <div className="p-7 border-b border-white/10 bg-white/5 backdrop-blur-3xl">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-2xl font-black text-[var(--foreground)] tracking-tight flex items-center gap-2">
-               Connect
+              Connect
             </h2>
             <button
               onClick={openNewConvoModal}
@@ -215,11 +215,10 @@ export default function MessagingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => setActiveConversation(conv)}
-                    className={`w-full group p-4 rounded-3xl flex items-start gap-4 transition-all duration-500 relative overflow-hidden ${
-                      activeConversation?.id === conv.id 
-                        ? "bg-white/10 shadow-xl border border-white/10" 
+                    className={`w-full group p-4 rounded-3xl flex items-start gap-4 transition-all duration-500 relative overflow-hidden ${activeConversation?.id === conv.id
+                        ? "bg-white/10 shadow-xl border border-white/10"
                         : "hover:bg-white/5 border border-transparent"
-                    }`}
+                      }`}
                   >
                     {activeConversation?.id === conv.id && (
                       <motion.div layoutId="active-marker" className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-emerald-500 to-sky-500" />
@@ -255,7 +254,7 @@ export default function MessagingPage() {
       </motion.div>
 
       {/* Main Chat Area */}
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.98, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="flex-1 flex flex-col glass-panel border border-white/10 rounded-[3rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.4)] bg-white/[0.01] backdrop-blur-3xl relative z-10"
@@ -265,7 +264,7 @@ export default function MessagingPage() {
             {/* ── Chat Header ── */}
             <header className="px-10 py-8 border-b border-white/10 bg-white/[0.03] backdrop-blur-3xl flex items-center justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 p-20 -mr-20 -mt-20 bg-emerald-500/5 rounded-full blur-3xl" />
-              
+
               <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-[1.5rem] bg-gradient-to-br from-emerald-500/20 to-sky-500/10 border border-white/10 flex items-center justify-center shadow-inner">
                   <span className="text-2xl font-black bg-gradient-to-br from-emerald-500 to-sky-500 bg-clip-text text-transparent">
@@ -286,7 +285,7 @@ export default function MessagingPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3 relative z-10">
                 <button className="p-3 rounded-2xl border border-white/10 hover:bg-white/5 text-[var(--primary-500)] hover:text-emerald-500 transition-all active:scale-95 shadow-lg">
                   <Video size={18} />
@@ -320,7 +319,7 @@ export default function MessagingPage() {
                       key={msg.id}
                       message={msg}
                       formatTime={formatTime}
-                      showAvatar={idx === 0 || messages[idx-1].sender_id !== msg.sender_id}
+                      showAvatar={idx === 0 || messages[idx - 1].sender_id !== msg.sender_id}
                     />
                   ))}
                   <div ref={messagesEndRef} />
@@ -332,7 +331,7 @@ export default function MessagingPage() {
             <footer className="p-10 pt-4 relative bg-transparent">
               <div className="relative group max-w-4xl mx-auto">
                 <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-sky-500/20 rounded-[2.5rem] blur opacity-0 group-focus-within:opacity-100 transition duration-1000"></div>
-                
+
                 <div className="relative flex items-end gap-3 glass-panel border border-white/10 rounded-[2rem] p-3 pr-4 shadow-2xl backdrop-blur-3xl focus-within:border-white/20 transition-all">
                   <button className="p-3.5 text-[var(--primary-500)] hover:text-emerald-500 transition-colors">
                     <Paperclip size={18} />
@@ -369,8 +368,8 @@ export default function MessagingPage() {
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-20 space-y-8 relative overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
-            
-            <motion.div 
+
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="w-32 h-32 rounded-[3.5rem] bg-white/5 border border-white/10 flex items-center justify-center text-[var(--primary-500)] shadow-inner group relative"
@@ -378,7 +377,7 @@ export default function MessagingPage() {
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
               <Zap size={56} className="opacity-10 text-emerald-500 relative z-10" />
             </motion.div>
-            
+
             <div className="space-y-3 relative z-10">
               <h3 className="text-3xl font-black text-[var(--foreground)] tracking-tighter flex items-center justify-center gap-3">
                 Secure Channel <span className="text-emerald-500">v2.0</span>
@@ -388,7 +387,7 @@ export default function MessagingPage() {
               </p>
             </div>
 
-            <button 
+            <button
               onClick={openNewConvoModal}
               className="px-10 py-4 bg-white/5 border border-white/10 rounded-3xl text-xs font-black uppercase tracking-widest text-[var(--foreground)] hover:bg-white/10 transition-all active:scale-95 shadow-xl relative z-10"
             >
@@ -401,14 +400,14 @@ export default function MessagingPage() {
       {/* ── New Conversation Modal (Glass Overhaul) ── */}
       <AnimatePresence>
         {newConvoModal && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-xl flex items-center justify-center z-[100] p-6"
             onClick={(e) => e.target === e.currentTarget && setNewConvoModal(false)}
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, y: 30, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 30, opacity: 0 }}
@@ -417,7 +416,7 @@ export default function MessagingPage() {
               {/* Modal Decors */}
               <div className="absolute top-0 right-0 p-24 -mr-24 -mt-24 bg-emerald-500/20 rounded-full blur-[100px]" />
               <div className="absolute bottom-0 left-0 p-24 -ml-24 -mb-24 bg-sky-500/10 rounded-full blur-[100px]" />
-              
+
               <div className="flex items-center justify-between mb-10 relative z-10">
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-white tracking-tighter">Initialize Bridge</h3>
@@ -454,11 +453,10 @@ export default function MessagingPage() {
                     <button
                       key={user.id}
                       onClick={() => setSelectedUser(user)}
-                      className={`w-full group flex items-center gap-5 px-5 py-5 rounded-[2rem] border transition-all duration-500 text-left ${
-                        selectedUser?.id === user.id
+                      className={`w-full group flex items-center gap-5 px-5 py-5 rounded-[2rem] border transition-all duration-500 text-left ${selectedUser?.id === user.id
                           ? "border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_30px_rgba(16,185,129,0.1)]"
                           : "border-transparent hover:bg-white/5 bg-transparent"
-                      }`}
+                        }`}
                     >
                       <div className="w-14 h-14 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                         <span className="text-xl font-black bg-gradient-to-br from-emerald-500 to-sky-500 bg-clip-text text-transparent uppercase">
@@ -472,7 +470,7 @@ export default function MessagingPage() {
                         <div className="flex items-center gap-2 mt-1">
                           <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-amber-500/20 text-amber-500' : 'bg-white/10 text-white/40'}`}>
                             {user.role}
-                          </p>
+                          </div>
                         </div>
                       </div>
                       {selectedUser?.id === user.id && (
@@ -515,17 +513,16 @@ function MessageBubble({ message, formatTime, showAvatar }) {
     >
       <div className={`w-9 h-9 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 mb-2 transition-all shadow-lg ${showAvatar ? "opacity-100" : "opacity-0 h-0 invisible"}`}>
         <span className="text-[10px] font-black bg-gradient-to-br from-emerald-500 to-sky-500 bg-clip-text text-transparent">
-          {message.sender_name?.charAt(0).toUpperCase() || <User size={12}/>}
+          {message.sender_name?.charAt(0).toUpperCase() || <User size={12} />}
         </span>
       </div>
 
       <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"} max-w-[80%] group`}>
         <div
-          className={`px-7 py-4 rounded-[2.5rem] text-[14px] leading-relaxed shadow-2xl transition-all duration-500 relative font-medium ${
-            isOwn
+          className={`px-7 py-4 rounded-[2.5rem] text-[14px] leading-relaxed shadow-2xl transition-all duration-500 relative font-medium ${isOwn
               ? "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-br-none shadow-emerald-500/20"
               : "bg-white/[0.04] text-[var(--foreground)] border border-white/10 rounded-bl-none hover:bg-white/[0.07]"
-          }`}
+            }`}
         >
           {message.content}
         </div>
@@ -535,7 +532,7 @@ function MessageBubble({ message, formatTime, showAvatar }) {
           </span>
           {isOwn && (
             <div className="text-emerald-500 transition-transform group-hover:scale-110">
-               {message.is_read ? <CheckCheck size={14} strokeWidth={3}/> : <Check size={14} strokeWidth={3}/>}
+              {message.is_read ? <CheckCheck size={14} strokeWidth={3} /> : <Check size={14} strokeWidth={3} />}
             </div>
           )}
         </div>
