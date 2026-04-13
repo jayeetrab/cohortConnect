@@ -16,8 +16,8 @@ export default function Layout({ user, onLogout }) {
     <div className="min-h-screen bg-[#0f0f13] text-white">
       {/* Ambient background blobs */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-[#F97316] opacity-[0.04] blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[#14B8A6] opacity-[0.04] blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-[#F97316] opacity-[0.04] blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[#14B8A6] opacity-[0.04] blur-[100px]" style={{ animationDelay: '2s' }} />
       </div>
 
       {/* Navbar */}
@@ -36,11 +36,10 @@ export default function Layout({ user, onLogout }) {
               {nav && (
                 <Link
                   to={nav.path}
-                  className={`text-sm px-4 py-1.5 rounded-full border transition-all duration-200 ${
-                    location.pathname === nav.path
+                  className={`text-sm px-4 py-1.5 rounded-full border transition-all duration-200 ${location.pathname === nav.path
                       ? 'border-[#F97316]/50 text-[#F97316] bg-[#F97316]/10'
                       : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
-                  }`}
+                    }`}
                 >
                   {nav.icon} {nav.label}
                 </Link>

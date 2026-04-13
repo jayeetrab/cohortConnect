@@ -10,9 +10,9 @@ import { useAuth } from '../context/AuthContext';
 const StatCard = ({ label, value, sub, icon, color = 'orange', delay = 0 }) => {
   const colors = {
     orange: 'text-[#F97316] bg-[#F97316]/10 border-[#F97316]/20',
-    teal:   'text-[#14B8A6] bg-[#14B8A6]/10 border-[#14B8A6]/20',
+    teal: 'text-[#14B8A6] bg-[#14B8A6]/10 border-[#14B8A6]/20',
     purple: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-    emerald:'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
   };
   return (
     <motion.div
@@ -64,8 +64,8 @@ export default function AdminDashboard() {
   const [outcomeForm, setOutcomeForm] = useState({ student_id: '', outcome: 'placed', employer: '', job_title: '' });
   const [outcomeMsg, setOutcomeMsg] = useState('');
 
-  useEffect(() => { 
-    fetchAll(); 
+  useEffect(() => {
+    fetchAll();
     const interval = setInterval(fetchAll, 30000); // 30s polling
     return () => clearInterval(interval);
   }, []);
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
           <ShieldAlert size={20} className="text-[#F97316]" />
           <p className="text-xs uppercase tracking-widest text-[var(--primary-500)]">Admin Control Centre</p>
           <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-emerald-500 " />
             <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Engine</span>
           </div>
         </div>
@@ -365,12 +365,11 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-5 py-3">
                     {s.outcome ? (
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs border font-semibold capitalize ${
-                        s.outcome === 'placed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                        s.outcome === 'interview' ? 'bg-[#14B8A6]/10 text-[#14B8A6] border-[#14B8A6]/20' :
-                        s.outcome === 'offer' ? 'bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20' :
-                        'bg-red-500/10 text-red-400 border-red-500/20'
-                      }`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs border font-semibold capitalize ${s.outcome === 'placed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                          s.outcome === 'interview' ? 'bg-[#14B8A6]/10 text-[#14B8A6] border-[#14B8A6]/20' :
+                            s.outcome === 'offer' ? 'bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20' :
+                              'bg-red-500/10 text-red-400 border-red-500/20'
+                        }`}>
                         {s.outcome}
                       </span>
                     ) : (

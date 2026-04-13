@@ -13,10 +13,10 @@ export default function AuthPage() {
   const [error, setError] = useState('');
 
   const roles = [
-    { value: 'student',  label: 'Student',  icon: '🎓' },
+    { value: 'student', label: 'Student', icon: '🎓' },
     { value: 'employer', label: 'Employer', icon: '🏢' },
-    { value: 'alumni',   label: 'Alumni',   icon: '🤝' },
-    { value: 'admin',    label: 'Admin',    icon: '🛡️' },
+    { value: 'alumni', label: 'Alumni', icon: '🤝' },
+    { value: 'admin', label: 'Admin', icon: '🛡️' },
   ];
 
   const handleSubmit = async (e) => {
@@ -50,8 +50,8 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-4 relative overflow-hidden">
       {/* Ambient blobs */}
-      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#F97316] opacity-[0.05] blur-[140px] animate-pulse pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-[#14B8A6] opacity-[0.05] blur-[120px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#F97316] opacity-[0.05] blur-[140px]  pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-[#14B8A6] opacity-[0.05] blur-[120px] pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -76,11 +76,10 @@ export default function AuthPage() {
               <button
                 key={m}
                 onClick={() => { setMode(m); setError(''); }}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                  mode === m
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${mode === m
                     ? 'bg-[#F97316] text-white shadow-lg shadow-[#F97316]/20'
                     : 'text-[var(--primary-500)] hover:text-[var(--foreground)]'
-                }`}
+                  }`}
               >
                 {m === 'login' ? 'Sign In' : 'Register'}
               </button>
@@ -122,11 +121,10 @@ export default function AuthPage() {
                     key={r.value}
                     type="button"
                     onClick={() => setForm({ ...form, role: r.value })}
-                    className={`py-2.5 px-3 rounded-xl border text-sm transition-all duration-200 flex items-center gap-2 font-medium ${
-                      form.role === r.value
+                    className={`py-2.5 px-3 rounded-xl border text-sm transition-all duration-200 flex items-center gap-2 font-medium ${form.role === r.value
                         ? 'border-[#F97316]/60 bg-[#F97316]/10 text-[#F97316]'
                         : 'border-[var(--border)] text-[var(--primary-500)] hover:text-[var(--foreground)] hover:border-[var(--primary-500)]'
-                    }`}
+                      }`}
                   >
                     {r.icon} {r.label}
                   </button>
