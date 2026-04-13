@@ -44,7 +44,7 @@ export default function JobsPage() {
         <p className="text-xs uppercase tracking-widest text-[var(--primary-500)] mb-1">Job Board</p>
         <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight">Live Opportunities</h1>
         <p className="text-[var(--primary-500)] text-sm mt-1">{jobs.length} roles available · Updated daily</p>
-            </motion.div>
+      </motion.div>
 
       {/* Search */}
       <div className="relative">
@@ -77,7 +77,7 @@ export default function JobsPage() {
               key={job._id}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.04 }}
+              transition={{ delay: idx * 0.001 }}
               className="glass-panel border border-[var(--border)] hover:border-[var(--primary-500)]/30 rounded-2xl p-6 transition-all duration-300 group"
             >
               <div className="flex items-start justify-between gap-4">
@@ -98,11 +98,10 @@ export default function JobsPage() {
 
                 <button
                   onClick={() => toggleAlert(job._id)}
-                  className={`p-2.5 rounded-xl border transition-all shrink-0 ${
-                    alerts.has(job._id)
-                      ? 'bg-[#F97316]/10 border-[#F97316]/30 text-[#F97316]'
-                      : 'border-[var(--border)] text-[var(--primary-500)] hover:text-[var(--foreground)] hover:border-[var(--primary-500)]/40'
-                  }`}
+                  className={`p-2.5 rounded-xl border transition-all shrink-0 ${alerts.has(job._id)
+                    ? 'bg-[#F97316]/10 border-[#F97316]/30 text-[#F97316]'
+                    : 'border-[var(--border)] text-[var(--primary-500)] hover:text-[var(--foreground)] hover:border-[var(--primary-500)]/40'
+                    }`}
                   title={alerts.has(job._id) ? 'Remove alert' : 'Set alert'}
                 >
                   {alerts.has(job._id) ? <Bell size={15} /> : <BellOff size={15} />}
@@ -128,14 +127,13 @@ export default function JobsPage() {
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${job.matchScore}%` }}
-                      transition={{ duration: 0.8 }}
+                      transition={{ duration: 0.001 }}
                       className="h-full rounded-full bg-gradient-to-r from-[#F97316] to-[#14B8A6]"
                     />
                   </div>
-                  <span className={`text-xs font-bold shrink-0 ${
-                    job.matchScore >= 80 ? 'text-emerald-400' :
+                  <span className={`text-xs font-bold shrink-0 ${job.matchScore >= 80 ? 'text-emerald-400' :
                     job.matchScore >= 60 ? 'text-[#F97316]' : 'text-[var(--primary-500)]'
-                  }`}>
+                    }`}>
                     {job.matchScore}% match
                   </span>
                 </div>
